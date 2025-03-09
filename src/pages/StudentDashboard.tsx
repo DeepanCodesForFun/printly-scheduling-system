@@ -161,68 +161,14 @@ const StudentDashboard = () => {
             </motion.div>
           </div>
           
-          {/* Steps Progress Bar */}
-          <div className="mb-10">
-            <div className="flex items-center justify-between max-w-2xl mx-auto relative">
-              {/* Line connector overlay */}
-              <div className="absolute top-5 left-0 w-full h-0.5 bg-muted z-0"></div>
-              
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex flex-col items-center relative z-10">
-                  {/* Step circle */}
-                  <motion.div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      currentStep === step.number
-                        ? "bg-primary text-white"
-                        : currentStep > step.number
-                        ? "bg-primary/20 text-primary"
-                        : "bg-secondary text-muted-foreground"
-                    }`}
-                    whileHover={{ scale: 1.1 }}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    {currentStep > step.number ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <span>{step.number}</span>
-                    )}
-                  </motion.div>
-                  
-                  {/* Progress overlay */}
-                  {index < steps.length - 1 && (
-                    <motion.div
-                      className="absolute top-5 left-[50px] h-0.5 bg-primary z-0"
-                      style={{ 
-                        width: "calc(100% - 20px)", 
-                        left: "calc(50% + 5px)",
-                        transformOrigin: "left"
-                      }}
-                      initial={{ scaleX: 0 }}
-                      animate={{ 
-                        scaleX: currentStep > step.number ? 1 : 0
-                      }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                    />
-                  )}
-                  
-                  {/* Step title */}
-                  <motion.p
-                    className={`mt-2 text-sm font-medium ${
-                      currentStep === step.number ? "text-primary" : ""
-                    }`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
-                  >
-                    {step.title}
-                  </motion.p>
-                </div>
-              ))}
-            </div>
+          {/* Display current step */}
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-bold text-primary">
+              Step {currentStep}: {steps[currentStep - 1].title}
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              {steps[currentStep - 1].description}
+            </p>
           </div>
           
           {/* Step Content */}
