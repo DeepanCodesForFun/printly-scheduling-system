@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -7,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FileUploader from "@/components/FileUploader";
 import PrintConfigCard from "@/components/PrintConfigCard";
+import CursorParticles from "@/components/CursorParticles";
 
 const printConfigs = [
   {
@@ -65,7 +65,6 @@ const StudentDashboard = () => {
     
     setCurrentStep(prev => prev + 1);
     
-    // Scroll to top when changing steps
     window.scrollTo({
       top: 0,
       behavior: "smooth"
@@ -75,7 +74,6 @@ const StudentDashboard = () => {
   const handlePrevStep = () => {
     setCurrentStep(prev => prev - 1);
     
-    // Scroll to top when changing steps
     window.scrollTo({
       top: 0,
       behavior: "smooth"
@@ -85,12 +83,10 @@ const StudentDashboard = () => {
   const handleSubmitOrder = () => {
     setIsProcessing(true);
     
-    // Simulate order processing
     setTimeout(() => {
       setIsProcessing(false);
       toast.success("Your print request has been submitted!");
       
-      // Reset form and go to step 1
       setFiles([]);
       setConfig({
         color: "bw",
@@ -102,26 +98,25 @@ const StudentDashboard = () => {
   };
 
   const calculatePrice = () => {
-    let basePrice = 2; // Base price per page
+    let basePrice = 2;
     
     if (config.color === "color") {
-      basePrice += 3; // Color adds 3 to the base price
+      basePrice += 3;
     }
     
     if (config.sides === "double") {
-      basePrice = basePrice * 0.8; // 20% discount for double-sided
+      basePrice = basePrice * 0.8;
     }
     
     if (config.pages !== "1") {
-      basePrice = basePrice * 0.9; // 10% discount for multiple pages per sheet
+      basePrice = basePrice * 0.9;
     }
     
-    const estimatedPages = files.length * 2; // Rough estimate
+    const estimatedPages = files.length * 2;
     
     return (basePrice * estimatedPages).toFixed(2);
   };
 
-  // Steps data
   const steps = [
     { 
       number: 1, 
@@ -145,11 +140,11 @@ const StudentDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <CursorParticles />
       <Header />
       
       <main className="flex-1 pt-24 pb-12 px-6 md:px-12 lg:px-24">
         <div className="max-w-6xl mx-auto">
-          {/* Page Title */}
           <div className="text-center mb-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -161,7 +156,6 @@ const StudentDashboard = () => {
             </motion.div>
           </div>
           
-          {/* Display current step */}
           <div className="mb-10 text-center">
             <h2 className="text-2xl font-bold text-primary">
               Step {currentStep}: {steps[currentStep - 1].title}
@@ -171,7 +165,6 @@ const StudentDashboard = () => {
             </p>
           </div>
           
-          {/* Step Content */}
           <motion.div
             key={currentStep}
             initial={{ opacity: 0, y: 20 }}
@@ -180,7 +173,6 @@ const StudentDashboard = () => {
             transition={{ duration: 0.5 }}
             className="glass-card dark:glass-card-dark rounded-2xl p-6 md:p-8 mb-8"
           >
-            {/* Step 1: Upload Files */}
             {currentStep === 1 && (
               <div>
                 <div className="flex items-center mb-6">
@@ -198,7 +190,6 @@ const StudentDashboard = () => {
               </div>
             )}
             
-            {/* Step 2: Configure Options */}
             {currentStep === 2 && (
               <div>
                 <div className="flex items-center mb-6">
@@ -245,7 +236,6 @@ const StudentDashboard = () => {
               </div>
             )}
             
-            {/* Step 3: Payment */}
             {currentStep === 3 && (
               <div>
                 <div className="flex items-center mb-6">
@@ -303,7 +293,6 @@ const StudentDashboard = () => {
             )}
           </motion.div>
           
-          {/* Navigation Buttons */}
           <div className="flex justify-between">
             {currentStep > 1 ? (
               <motion.button

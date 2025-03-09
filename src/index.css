@@ -123,6 +123,12 @@
       left: 100%;
     }
   }
+  
+  /* Particle effect styles */
+  .cursor-particle {
+    @apply pointer-events-none fixed;
+    background-image: radial-gradient(circle, var(--particle-color) 0%, transparent 70%);
+  }
 }
 
 /* Page Transitions */
