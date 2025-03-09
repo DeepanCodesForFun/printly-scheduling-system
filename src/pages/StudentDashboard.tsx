@@ -163,26 +163,15 @@ const StudentDashboard = () => {
           
           {/* Steps Progress Bar */}
           <div className="mb-10">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
+            <div className="flex items-center justify-between max-w-2xl mx-auto relative">
+              {/* Line connector overlay */}
+              <div className="absolute top-5 left-0 w-full h-0.5 bg-muted z-0"></div>
+              
               {steps.map((step, index) => (
-                <div key={step.number} className="flex flex-col items-center relative">
-                  {/* Line connector */}
-                  {index < steps.length - 1 && (
-                    <div className="absolute top-5 left-[50px] w-[calc(100%-32px)] h-0.5 bg-muted hidden sm:block">
-                      <motion.div
-                        className="h-full bg-primary origin-left"
-                        initial={{ scaleX: 0 }}
-                        animate={{ 
-                          scaleX: currentStep > step.number ? 1 : 0
-                        }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                      />
-                    </div>
-                  )}
-                  
+                <div key={step.number} className="flex flex-col items-center relative z-10">
                   {/* Step circle */}
                   <motion.div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center z-10 ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       currentStep === step.number
                         ? "bg-primary text-white"
                         : currentStep > step.number
@@ -202,6 +191,23 @@ const StudentDashboard = () => {
                       <span>{step.number}</span>
                     )}
                   </motion.div>
+                  
+                  {/* Progress overlay */}
+                  {index < steps.length - 1 && (
+                    <motion.div
+                      className="absolute top-5 left-[50px] h-0.5 bg-primary z-0"
+                      style={{ 
+                        width: "calc(100% - 20px)", 
+                        left: "calc(50% + 5px)",
+                        transformOrigin: "left"
+                      }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ 
+                        scaleX: currentStep > step.number ? 1 : 0
+                      }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    />
+                  )}
                   
                   {/* Step title */}
                   <motion.p

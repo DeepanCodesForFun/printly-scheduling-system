@@ -1,7 +1,7 @@
-
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, FileText, File, Printer, Check, User, Calendar, Clock } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface PrintJobModalProps {
   isOpen: boolean;
@@ -40,7 +40,6 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
     };
   }, [onClose]);
   
-  // Format the timestamp to a more readable format
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "";
     const date = new Date(timestamp);
@@ -53,16 +52,26 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
     }).format(date);
   };
   
-  // Format file size
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     else return (bytes / 1048576).toFixed(1) + " MB";
   };
   
-  // Prevent click propagation
   const handleContentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+  };
+  
+  const handleDownloadAll = () => {
+    toast.success("All files will be downloaded shortly", {
+      description: "Files are being prepared for download"
+    });
+  };
+  
+  const handlePrintAll = () => {
+    toast.success("Print job started", {
+      description: "All files have been sent to the printer"
+    });
   };
   
   return (
@@ -179,6 +188,7 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                       className="w-full bg-secondary hover:bg-secondary/70 text-primary font-medium py-3 rounded-xl flex items-center justify-center mb-3"
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.98 }}
+                      onClick={handleDownloadAll}
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download All Files
@@ -188,6 +198,7 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                       className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-xl flex items-center justify-center"
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.98 }}
+                      onClick={handlePrintAll}
                     >
                       <Printer className="h-4 w-4 mr-2" />
                       Print All
