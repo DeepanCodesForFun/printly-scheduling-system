@@ -18,35 +18,42 @@ const CursorParticles = () => {
   const requestRef = useRef<number | null>(null);
   const previousTimeRef = useRef<number | null>(null);
   const particleIdCounter = useRef(0);
+  const lastEmitTimeRef = useRef(0);
   
-  // Colors for particles
+  // Light blue colors for particles
   const particleColors = [
-    "#9b87f5", // Primary Purple
-    "#D6BCFA", // Light Purple
-    "#8B5CF6", // Vivid Purple
-    "#D946EF", // Magenta Pink
-    "#0EA5E9", // Ocean Blue
     "#33C3F0", // Sky Blue
+    "#1EAEDB", // Bright Blue
+    "#0EA5E9", // Ocean Blue
+    "#38BDF8", // Light Blue
+    "#7DD3FC", // Lighter Blue
+    "#BAE6FD", // Pale Blue
   ];
 
-  // Track mouse position
+  // Track mouse position and create particles
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
       
-      // Create new particles
-      if (Math.random() > 0.5) { // Only create particles sometimes for performance
-        const newParticle: Particle = {
-          id: particleIdCounter.current++,
-          x: e.clientX,
-          y: e.clientY,
-          size: Math.random() * 15 + 5, // Random size between 5-20
-          color: particleColors[Math.floor(Math.random() * particleColors.length)],
-          opacity: Math.random() * 0.7 + 0.3, // Random opacity between 0.3-1
-          lifespan: Math.random() * 1000 + 500, // Lifetime between 500-1500ms
-        };
+      // Create new particles at a steady rate
+      const now = Date.now();
+      if (now - lastEmitTimeRef.current > 15) { // Emit particle every 15ms for continuous trail
+        lastEmitTimeRef.current = now;
         
-        setParticles(prevParticles => [...prevParticles, newParticle]);
+        // Create multiple particles per emission for fuller effect
+        for (let i = 0; i < 2; i++) {
+          const newParticle: Particle = {
+            id: particleIdCounter.current++,
+            x: e.clientX + (Math.random() * 10 - 5), // Slight position variance
+            y: e.clientY + (Math.random() * 10 - 5),
+            size: Math.random() * 12 + 3, // Random size between 3-15
+            color: particleColors[Math.floor(Math.random() * particleColors.length)],
+            opacity: Math.random() * 0.5 + 0.5, // Higher base opacity (0.5-1.0)
+            lifespan: Math.random() * 1500 + 1000, // Longer lifetime for trailing effect (1000-2500ms)
+          };
+          
+          setParticles(prevParticles => [...prevParticles, newParticle]);
+        }
       }
     };
 
@@ -69,8 +76,8 @@ const CursorParticles = () => {
         .map(particle => ({
           ...particle,
           lifespan: particle.lifespan - deltaTime,
-          opacity: (particle.lifespan / 1000) * particle.opacity, // Fade based on remaining life
-          size: particle.size * 0.98, // Slightly shrink
+          opacity: (particle.lifespan / 1500) * particle.opacity, // Slower fade based on longer lifespan
+          size: particle.size * 0.99, // Slower shrink for longer trail
         }))
         .filter(particle => particle.lifespan > 0) // Remove dead particles
     );
@@ -100,12 +107,12 @@ const CursorParticles = () => {
             height: particle.size,
             backgroundColor: particle.color,
             opacity: particle.opacity,
-            filter: `blur(${particle.size / 5}px) brightness(1.2)`,
-            boxShadow: `0 0 ${particle.size / 2}px ${particle.color}`,
+            filter: `blur(${particle.size / 3}px) brightness(1.5)`,
+            boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
           }}
-          initial={{ scale: 0 }}
+          initial={{ scale: 0.3 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         />
       ))}
     </div>
