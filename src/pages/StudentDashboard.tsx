@@ -6,7 +6,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FileUploader from "@/components/FileUploader";
 import PrintConfigCard from "@/components/PrintConfigCard";
-import CursorParticles from "@/components/CursorParticles";
 
 const printConfigs = [
   {
@@ -140,7 +139,6 @@ const StudentDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <CursorParticles />
       <Header />
       
       <main className="flex-1 pt-24 pb-12 px-6 md:px-12 lg:px-24">

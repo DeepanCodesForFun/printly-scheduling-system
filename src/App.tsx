@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import StudentDashboard from "./pages/StudentDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
 import AnimatedPageTransition from "./components/AnimatedPageTransition";
+import CursorParticles from "./components/CursorParticles";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const AnimatedRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <CursorParticles />
       <Toaster />
       <Sonner />
       <BrowserRouter>
