@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -7,6 +8,36 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils"
+
+// Toast progress bar component
+const ToastProgress = ({ className }: { className?: string }) => {
+  const [progress, setProgress] = useState(100)
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev <= 0) {
+          clearInterval(interval)
+          return 0
+        }
+        return prev - 0.5
+      })
+    }, 10)
+    
+    return () => clearInterval(interval)
+  }, [])
+  
+  return (
+    <div className={cn("h-1 w-full bg-secondary mt-1.5", className)}>
+      <div 
+        className="h-full bg-primary transition-all duration-100 ease-linear"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
+  )
+}
 
 export function Toaster() {
   const { toasts } = useToast()
@@ -24,6 +55,7 @@ export function Toaster() {
             </div>
             {action}
             <ToastClose />
+            <ToastProgress />
           </Toast>
         )
       })}
