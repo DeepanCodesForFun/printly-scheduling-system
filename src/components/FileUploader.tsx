@@ -1,16 +1,38 @@
-import { useState, useRef } from "react";
-import { UploadCloud, File, X, Check, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { UploadCloud, File, X, Check, AlertCircle, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { getTotalPdfPageCount } from "@/utils/pdfUtils";
 
 interface FileUploaderProps {
-  onFilesChange: (files: File[]) => void;
+  onFilesChange: (files: File[], totalPages?: number) => void;
 }
 
 const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isCountingPages, setIsCountingPages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updatePageCount = async (files: File[]) => {
+    if (files.length === 0) {
+      setTotalPages(0);
+      return;
+    }
+    
+    setIsCountingPages(true);
+    try {
+      const pageCount = await getTotalPdfPageCount(files);
+      setTotalPages(pageCount);
+      onFilesChange(files, pageCount);
+    } catch (error) {
+      console.error("Error counting pages:", error);
+      toast.error("Could not count PDF pages");
+    } finally {
+      setIsCountingPages(false);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -24,7 +46,7 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
       if (validFiles.length > 0) {
         const updatedFiles = [...uploadedFiles, ...validFiles];
         setUploadedFiles(updatedFiles);
-        onFilesChange(updatedFiles);
+        updatePageCount(updatedFiles);
       }
     }
   };
@@ -53,7 +75,7 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
       if (validFiles.length > 0) {
         const updatedFiles = [...uploadedFiles, ...validFiles];
         setUploadedFiles(updatedFiles);
-        onFilesChange(updatedFiles);
+        updatePageCount(updatedFiles);
       }
     }
   };
@@ -61,7 +83,7 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
   const removeFile = (index: number) => {
     const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
     setUploadedFiles(updatedFiles);
-    onFilesChange(updatedFiles);
+    updatePageCount(updatedFiles);
   };
 
   const openFileDialog = () => {
@@ -120,10 +142,23 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
       
       {uploadedFiles.length > 0 && (
         <div className="bg-secondary/50 dark:bg-secondary/30 rounded-xl p-4">
-          <h4 className="font-medium mb-3 flex items-center">
-            <Check size={16} className="text-green-500 mr-2" />
-            Uploaded Files ({uploadedFiles.length})
-          </h4>
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-medium flex items-center">
+              <Check size={16} className="text-green-500 mr-2" />
+              Uploaded Files ({uploadedFiles.length})
+            </h4>
+            
+            <div className="flex items-center">
+              <FileText size={16} className="text-primary mr-2" />
+              <span className="text-sm font-medium">
+                {isCountingPages ? (
+                  <span className="text-muted-foreground">Counting pages...</span>
+                ) : (
+                  <span>Total Pages: <span className="text-primary">{totalPages}</span></span>
+                )}
+              </span>
+            </div>
+          </div>
           
           <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
             <AnimatePresence initial={false}>

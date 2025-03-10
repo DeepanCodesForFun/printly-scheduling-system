@@ -37,6 +37,7 @@ const printConfigs = [
 
 const StudentDashboard = () => {
   const [files, setFiles] = useState<File[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentStep, setCurrentStep] = useState(1);
   const [config, setConfig] = useState({
     color: "bw",
@@ -45,8 +46,11 @@ const StudentDashboard = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleFilesChange = (newFiles: File[]) => {
+  const handleFilesChange = (newFiles: File[], newTotalPages?: number) => {
     setFiles(newFiles);
+    if (newTotalPages !== undefined) {
+      setTotalPages(newTotalPages);
+    }
   };
 
   const handleConfigChange = (configId: string, optionId: string) => {
@@ -104,8 +108,6 @@ const StudentDashboard = () => {
     } else { // color
       pricePerPage = config.sides === "single" ? 10 : 17;
     }
-    
-    const totalPages = files.length;
     
     const numCopies = parseInt(config.copies);
     
@@ -216,6 +218,9 @@ const StudentDashboard = () => {
                     <span className="text-muted-foreground">Files:</span>
                     <span>{files.length} document(s)</span>
                     
+                    <span className="text-muted-foreground">Total Pages:</span>
+                    <span>{totalPages} page(s)</span>
+                    
                     <span className="text-muted-foreground">Color:</span>
                     <span>{config.color === "bw" ? "Black & White" : "Color"}</span>
                     
@@ -247,7 +252,7 @@ const StudentDashboard = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
-                          {files.length} document(s), {config.color === "bw" ? "B&W" : "Color"}, {config.sides === "single" ? "Single-sided" : "Double-sided"}, {config.copies} {parseInt(config.copies) > 1 ? "copies" : "copy"}
+                          {files.length} document(s), {totalPages} page(s), {config.color === "bw" ? "B&W" : "Color"}, {config.sides === "single" ? "Single-sided" : "Double-sided"}, {config.copies} {parseInt(config.copies) > 1 ? "copies" : "copy"}
                         </span>
                         <span>₹{calculatePrice()}</span>
                       </div>
