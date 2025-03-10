@@ -120,7 +120,6 @@ const StaffDashboard = () => {
   
   const updateStats = () => {
     setPendingCount(printOrders.length);
-    setCompletedCount(12); // Mock value
   };
 
   const handleRefresh = () => {
@@ -160,6 +159,9 @@ const StaffDashboard = () => {
       });
       
       setPrintOrders(updatedOrders.filter(order => order.id !== selectedOrder.id));
+      
+      // Increment the completed count when "Mark as Complete" is clicked
+      setCompletedCount(prevCount => prevCount + 1);
       
       toast.success(`Print job for ${selectedOrder.studentName} marked as complete`);
       setIsModalOpen(false);
