@@ -1,7 +1,7 @@
-
 import { useState, useRef } from "react";
 import { UploadCloud, File, X, Check, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface FileUploaderProps {
   onFilesChange: (files: File[]) => void;
@@ -15,9 +15,17 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
-      const updatedFiles = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(updatedFiles);
-      onFilesChange(updatedFiles);
+      const validFiles = newFiles.filter(file => file.type === 'application/pdf');
+      
+      if (validFiles.length !== newFiles.length) {
+        toast.error("Only PDF files are allowed");
+      }
+      
+      if (validFiles.length > 0) {
+        const updatedFiles = [...uploadedFiles, ...validFiles];
+        setUploadedFiles(updatedFiles);
+        onFilesChange(updatedFiles);
+      }
     }
   };
 
@@ -36,9 +44,17 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
     
     if (event.dataTransfer.files) {
       const newFiles = Array.from(event.dataTransfer.files);
-      const updatedFiles = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(updatedFiles);
-      onFilesChange(updatedFiles);
+      const validFiles = newFiles.filter(file => file.type === 'application/pdf');
+      
+      if (validFiles.length !== newFiles.length) {
+        toast.error("Only PDF files are allowed");
+      }
+      
+      if (validFiles.length > 0) {
+        const updatedFiles = [...uploadedFiles, ...validFiles];
+        setUploadedFiles(updatedFiles);
+        onFilesChange(updatedFiles);
+      }
     }
   };
 
@@ -75,7 +91,7 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
           onChange={handleFileChange}
           className="hidden"
           multiple
-          accept=".pdf,.docx,.doc,.jpg,.jpeg,.png"
+          accept=".pdf"
         />
         
         <motion.div
@@ -98,7 +114,7 @@ const FileUploader = ({ onFilesChange }: FileUploaderProps) => {
         
         <p className="text-sm text-muted-foreground mb-4 text-center">
           or <span className="text-primary">browse</span> to upload<br />
-          (PDF, DOCX, JPG, PNG)
+          (PDF files only)
         </p>
       </motion.div>
       

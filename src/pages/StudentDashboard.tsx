@@ -25,12 +25,12 @@ const printConfigs = [
     ]
   },
   {
-    id: "pages",
-    title: "Pages Per Sheet",
+    id: "copies",
+    title: "No of Copies",
     options: [
-      { id: "1", label: "1 Page", value: "1" },
-      { id: "2", label: "2 Pages", value: "2" },
-      { id: "4", label: "4 Pages", value: "4" }
+      { id: "1", label: "1 Copy", value: "1" },
+      { id: "2", label: "2 Copies", value: "2" },
+      { id: "3", label: "3 Copies", value: "3" }
     ]
   }
 ];
@@ -41,7 +41,7 @@ const StudentDashboard = () => {
   const [config, setConfig] = useState({
     color: "bw",
     sides: "single",
-    pages: "1"
+    copies: "1"
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -90,30 +90,28 @@ const StudentDashboard = () => {
       setConfig({
         color: "bw",
         sides: "single",
-        pages: "1"
+        copies: "1"
       });
       setCurrentStep(1);
     }, 2000);
   };
 
   const calculatePrice = () => {
-    let basePrice = 2;
+    let pricePerPage = 0;
     
-    if (config.color === "color") {
-      basePrice += 3;
+    if (config.color === "bw") {
+      pricePerPage = config.sides === "single" ? 3 : 5;
+    } else { // color
+      pricePerPage = config.sides === "single" ? 10 : 17;
     }
     
-    if (config.sides === "double") {
-      basePrice = basePrice * 0.8;
-    }
+    const totalPages = files.length;
     
-    if (config.pages !== "1") {
-      basePrice = basePrice * 0.9;
-    }
+    const numCopies = parseInt(config.copies);
     
-    const estimatedPages = files.length * 2;
+    const totalPrice = pricePerPage * totalPages * numCopies;
     
-    return (basePrice * estimatedPages).toFixed(2);
+    return totalPrice.toFixed(2);
   };
 
   const steps = [
@@ -181,7 +179,7 @@ const StudentDashboard = () => {
                 </div>
                 
                 <p className="text-muted-foreground mb-6">
-                  Select files to upload. Supported formats: PDF, DOCX, JPG, PNG.
+                  Select PDF files to upload.
                 </p>
                 
                 <FileUploader onFilesChange={handleFilesChange} />
@@ -224,8 +222,8 @@ const StudentDashboard = () => {
                     <span className="text-muted-foreground">Sides:</span>
                     <span>{config.sides === "single" ? "Single-sided" : "Double-sided"}</span>
                     
-                    <span className="text-muted-foreground">Pages per sheet:</span>
-                    <span>{config.pages}</span>
+                    <span className="text-muted-foreground">Copies:</span>
+                    <span>{config.copies}</span>
                     
                     <span className="text-muted-foreground">Estimated cost:</span>
                     <span className="font-semibold text-primary">₹{calculatePrice()}</span>
@@ -249,7 +247,7 @@ const StudentDashboard = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
-                          {files.length} document(s), {config.color === "bw" ? "B&W" : "Color"}, {config.sides === "single" ? "Single-sided" : "Double-sided"}
+                          {files.length} document(s), {config.color === "bw" ? "B&W" : "Color"}, {config.sides === "single" ? "Single-sided" : "Double-sided"}, {config.copies} {parseInt(config.copies) > 1 ? "copies" : "copy"}
                         </span>
                         <span>₹{calculatePrice()}</span>
                       </div>
