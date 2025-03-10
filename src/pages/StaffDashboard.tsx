@@ -7,129 +7,74 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OrderQueueItem from "@/components/OrderQueueItem";
 import PrintJobModal from "@/components/PrintJobModal";
-
-// Mock data for staff dashboard
-const mockPrintOrders = [
-  {
-    id: "ord-001",
-    studentName: "John Smith",
-    studentId: "IEM/2023/001",
-    timestamp: new Date().toISOString(),
-    fileCount: 3,
-    isActive: true,
-    files: [
-      { name: "Assignment_1.pdf", type: "pdf", size: 1024000 },
-      { name: "Notes_Chapter_2.docx", type: "docx", size: 856000 },
-      { name: "Presentation.pdf", type: "pdf", size: 3500000 }
-    ],
-    config: {
-      color: "Black & White",
-      sides: "Double-sided",
-      pages: "1 Page"
-    },
-    amount: 45.50
-  },
-  {
-    id: "ord-002",
-    studentName: "Emma Johnson",
-    studentId: "IEM/2023/042",
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
-    fileCount: 1,
-    isActive: false,
-    files: [
-      { name: "Final_Project.pdf", type: "pdf", size: 5240000 }
-    ],
-    config: {
-      color: "Color",
-      sides: "Single-sided",
-      pages: "1 Page"
-    },
-    amount: 35.00
-  },
-  {
-    id: "ord-003",
-    studentName: "Robert Chen",
-    studentId: "IEM/2023/089",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-    fileCount: 2,
-    isActive: false,
-    files: [
-      { name: "Lab_Report.docx", type: "docx", size: 980000 },
-      { name: "Data_Charts.pdf", type: "pdf", size: 1200000 }
-    ],
-    config: {
-      color: "Black & White",
-      sides: "Single-sided",
-      pages: "2 Pages"
-    },
-    amount: 25.75
-  },
-  {
-    id: "ord-004",
-    studentName: "Sophia Patel",
-    studentId: "IEM/2023/117",
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 minutes ago
-    fileCount: 4,
-    isActive: false,
-    files: [
-      { name: "Research_Paper.pdf", type: "pdf", size: 2560000 },
-      { name: "Bibliography.docx", type: "docx", size: 450000 },
-      { name: "Appendix_A.pdf", type: "pdf", size: 980000 },
-      { name: "Appendix_B.pdf", type: "pdf", size: 870000 }
-    ],
-    config: {
-      color: "Color",
-      sides: "Double-sided",
-      pages: "1 Page"
-    },
-    amount: 78.25
-  },
-  {
-    id: "ord-005",
-    studentName: "Michael Davis",
-    studentId: "IEM/2023/063",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
-    fileCount: 2,
-    isActive: false,
-    files: [
-      { name: "Thesis_Draft.pdf", type: "pdf", size: 7800000 },
-      { name: "References.docx", type: "docx", size: 560000 }
-    ],
-    config: {
-      color: "Black & White",
-      sides: "Double-sided",
-      pages: "2 Pages"
-    },
-    amount: 42.00
-  }
-];
+import { 
+  getPrintOrders, 
+  updateOrderStatus, 
+  deletePrintOrder, 
+  subscribeToOrders,
+  PrintOrder
+} from "@/services/printOrderService";
 
 const StaffDashboard = () => {
-  const [printOrders, setPrintOrders] = useState(mockPrintOrders);
-  const [isLoading, setIsLoading] = useState(false);
+  const [printOrders, setPrintOrders] = useState<PrintOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<(typeof mockPrintOrders)[0] | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<PrintOrder | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   
-  // Update stats on component mount
+  // Load orders on component mount
   useEffect(() => {
-    updateStats();
+    fetchPrintOrders();
+    
+    // Subscribe to real-time updates
+    const unsubscribe = subscribeToOrders((updatedOrders) => {
+      setPrintOrders(updatedOrders);
+      updateStats(updatedOrders);
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  
+  // Update stats when orders change
+  useEffect(() => {
+    updateStats(printOrders);
   }, [printOrders]);
   
-  const updateStats = () => {
-    setPendingCount(printOrders.length);
+  const updateStats = (orders: PrintOrder[]) => {
+    // Count pending orders
+    const pending = orders.filter(order => order.status === 'pending').length;
+    setPendingCount(pending);
+    
+    // Count completed orders from today
+    const today = new Date().toISOString().split('T')[0];
+    const completed = orders.filter(order => {
+      return order.status === 'completed' && 
+        order.timestamp.split('T')[0] === today;
+    }).length;
+    setCompletedCount(completed);
+  };
+
+  const fetchPrintOrders = async () => {
+    setIsLoading(true);
+    
+    try {
+      const orders = await getPrintOrders();
+      setPrintOrders(orders);
+    } catch (error) {
+      console.error("Error fetching print orders:", error);
+      toast.error("Failed to load print queue");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Queue refreshed");
-    }, 1000);
+    fetchPrintOrders();
+    toast.success("Queue refreshed");
   };
 
   const handleProcessOrder = (orderId: string) => {
@@ -145,46 +90,37 @@ const StaffDashboard = () => {
     setSelectedOrder(null);
   };
 
-  const handleCompleteOrder = () => {
+  const handleCompleteOrder = async () => {
     if (selectedOrder) {
-      // Remove the order from the list
-      setPrintOrders(printOrders.filter(order => order.id !== selectedOrder.id));
+      try {
+        await updateOrderStatus(selectedOrder.id, 'completed');
+        toast.success(`Print job for ${selectedOrder.studentName} marked as complete`);
+        
+        // Refresh the orders
+        fetchPrintOrders();
+      } catch (error) {
+        console.error("Error completing order:", error);
+        toast.error("Failed to complete print job");
+      }
       
-      // Update the next order to be active
-      const updatedOrders = printOrders.map((order, index) => {
-        if (index === 1) { // The second order becomes the first active one
-          return { ...order, isActive: true };
-        }
-        return order;
-      });
-      
-      setPrintOrders(updatedOrders.filter(order => order.id !== selectedOrder.id));
-      
-      // Increment the completed count when "Mark as Complete" is clicked
-      setCompletedCount(prevCount => prevCount + 1);
-      
-      toast.success(`Print job for ${selectedOrder.studentName} marked as complete`);
       setIsModalOpen(false);
       setSelectedOrder(null);
     }
   };
 
-  const handleDeleteOrder = () => {
+  const handleDeleteOrder = async () => {
     if (selectedOrder) {
-      // Remove the order from the list
-      setPrintOrders(printOrders.filter(order => order.id !== selectedOrder.id));
+      try {
+        await deletePrintOrder(selectedOrder.id);
+        toast.info(`Print job for ${selectedOrder.studentName} has been deleted`);
+        
+        // Refresh the orders
+        fetchPrintOrders();
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        toast.error("Failed to delete print job");
+      }
       
-      // Update the next order to be active
-      const updatedOrders = printOrders.map((order, index) => {
-        if (index === 1) { // The second order becomes the first active one
-          return { ...order, isActive: true };
-        }
-        return order;
-      });
-      
-      setPrintOrders(updatedOrders.filter(order => order.id !== selectedOrder.id));
-      
-      toast.info(`Print job for ${selectedOrder.studentName} has been deleted`);
       setIsModalOpen(false);
       setSelectedOrder(null);
     }
@@ -322,7 +258,12 @@ const StaffDashboard = () => {
             </div>
             
             <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
-              {filteredOrders.length > 0 ? (
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <RefreshCw className="h-8 w-8 mx-auto animate-spin text-primary/60" />
+                  <p className="text-muted-foreground mt-4">Loading print requests...</p>
+                </div>
+              ) : filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
                   <OrderQueueItem
                     key={order.id}

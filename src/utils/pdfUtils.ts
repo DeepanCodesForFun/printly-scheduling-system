@@ -2,6 +2,7 @@
 /**
  * Utility functions for working with PDF files
  */
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Get the page count from a PDF file
@@ -56,4 +57,66 @@ export const getTotalPdfPageCount = async (files: File[]): Promise<number> => {
     console.error('Error counting PDF pages:', error);
     return files.length; // Fallback to number of files
   }
+};
+
+/**
+ * Upload PDF files to Supabase storage
+ * @param files Array of PDF files to upload
+ * @param orderId UUID of the print order
+ * @returns Promise resolving to an array of file paths
+ */
+export const uploadPdfFiles = async (files: File[], orderId: string): Promise<{
+  filePath: string;
+  fileInfo: {
+    name: string;
+    size: number;
+    type: string;
+    pageCount: number;
+  };
+}[]> => {
+  try {
+    const uploadPromises = files.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${orderId}/${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('print_files')
+        .upload(filePath, file);
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      const pageCount = await getPdfPageCount(file);
+      
+      return {
+        filePath,
+        fileInfo: {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          pageCount
+        }
+      };
+    });
+    
+    return await Promise.all(uploadPromises);
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a downloadable URL for a file from Supabase storage
+ * @param filePath Path to the file in storage
+ * @returns URL to download the file
+ */
+export const getFileUrl = (filePath: string): string => {
+  const { data } = supabase.storage
+    .from('print_files')
+    .getPublicUrl(filePath);
+  
+  return data.publicUrl;
 };

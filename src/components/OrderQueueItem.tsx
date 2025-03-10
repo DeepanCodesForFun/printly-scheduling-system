@@ -2,16 +2,10 @@
 import { motion } from "framer-motion";
 import { User, Calendar, FileText, Clock, Printer } from "lucide-react";
 import { useState } from "react";
+import { PrintOrder } from "@/services/printOrderService";
 
 interface OrderQueueItemProps {
-  order: {
-    id: string;
-    studentName: string;
-    studentId: string;
-    timestamp: string;
-    fileCount: number;
-    isActive: boolean;
-  };
+  order: PrintOrder;
   onProcessClick: (orderId: string) => void;
 }
 

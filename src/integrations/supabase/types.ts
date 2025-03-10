@@ -9,7 +9,106 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      print_configs: {
+        Row: {
+          color: string
+          copies: number
+          id: string
+          order_id: string
+          sides: string
+        }
+        Insert: {
+          color: string
+          copies?: number
+          id?: string
+          order_id: string
+          sides: string
+        }
+        Update: {
+          color?: string
+          copies?: number
+          id?: string
+          order_id?: string
+          sides?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_configs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "print_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_files: {
+        Row: {
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          order_id: string
+          page_count: number
+          storage_path: string
+        }
+        Insert: {
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          order_id: string
+          page_count?: number
+          storage_path: string
+        }
+        Update: {
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          order_id?: string
+          page_count?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_files_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "print_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_orders: {
+        Row: {
+          amount: number
+          id: string
+          is_active: boolean
+          status: string
+          student_id: string
+          student_name: string
+          timestamp: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          is_active?: boolean
+          status?: string
+          student_id: string
+          student_name: string
+          timestamp?: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          is_active?: boolean
+          status?: string
+          student_id?: string
+          student_name?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

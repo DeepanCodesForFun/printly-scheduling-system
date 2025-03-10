@@ -1,30 +1,17 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, FileText, File, Printer, Check, User, Calendar, Clock } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { PrintOrder } from "@/services/printOrderService";
+import { getFileUrl } from "@/utils/pdfUtils";
 
 interface PrintJobModalProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
   onDelete: () => void;
-  orderData: {
-    id: string;
-    studentName: string;
-    studentId: string;
-    timestamp: string;
-    files: {
-      name: string;
-      type: string;
-      size: number;
-    }[];
-    config: {
-      color: string;
-      sides: string;
-      pages: string;
-    };
-    amount: number;
-  } | null;
+  orderData: PrintOrder | null;
 }
 
 const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: PrintJobModalProps) => {
@@ -63,7 +50,21 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
   };
   
   const handleDownloadAll = () => {
-    toast.success("All files will be downloaded shortly", {
+    if (!orderData) return;
+    
+    orderData.files.forEach((file: any) => {
+      if (file.path) {
+        const url = getFileUrl(file.path);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    });
+    
+    toast.success("All files are being downloaded", {
       description: "Files are being prepared for download"
     });
   };
@@ -147,8 +148,8 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                         <p className="font-medium">{orderData.config.sides}</p>
                       </div>
                       <div className="text-center p-3 bg-secondary/80 dark:bg-secondary/30 rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Pages</p>
-                        <p className="font-medium">{orderData.config.pages}</p>
+                        <p className="text-xs text-muted-foreground mb-1">Copies</p>
+                        <p className="font-medium">{orderData.config.copies}</p>
                       </div>
                     </div>
                   </div>
@@ -158,7 +159,7 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Files ({orderData.files.length})</h3>
                   <div className="glass-card dark:glass-card-dark rounded-xl p-4 max-h-[250px] overflow-y-auto">
                     <div className="space-y-2">
-                      {orderData.files.map((file, index) => (
+                      {orderData.files.map((file: any, index: number) => (
                         <div 
                           key={`${file.name}-${index}`}
                           className="flex items-center p-2.5 bg-secondary/50 dark:bg-secondary/20 rounded-lg"

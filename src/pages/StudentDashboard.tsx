@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FileUploader from "@/components/FileUploader";
 import PrintConfigCard from "@/components/PrintConfigCard";
+import { createPrintOrder } from "@/services/printOrderService";
 
 const printConfigs = [
   {
@@ -45,6 +46,8 @@ const StudentDashboard = () => {
     copies: "1"
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [studentName, setStudentName] = useState("");
+  const [studentId, setStudentId] = useState("");
 
   const handleFilesChange = (newFiles: File[], newTotalPages?: number) => {
     setFiles(newFiles);
@@ -66,6 +69,11 @@ const StudentDashboard = () => {
       return;
     }
     
+    if (currentStep === 3 && (!studentName || !studentId)) {
+      toast.error("Please enter your name and student ID");
+      return;
+    }
+    
     setCurrentStep(prev => prev + 1);
     
     window.scrollTo({
@@ -83,11 +91,23 @@ const StudentDashboard = () => {
     });
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
+    if (!studentName || !studentId) {
+      toast.error("Please enter your name and student ID");
+      return;
+    }
+
     setIsProcessing(true);
     
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      await createPrintOrder({
+        studentName,
+        studentId,
+        files,
+        config,
+        amount: parseFloat(calculatePrice())
+      });
+      
       toast.success("Your print request has been submitted!");
       
       setFiles([]);
@@ -97,7 +117,14 @@ const StudentDashboard = () => {
         copies: "1"
       });
       setCurrentStep(1);
-    }, 2000);
+      setStudentName("");
+      setStudentId("");
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      toast.error("Failed to submit print request. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const calculatePrice = () => {
@@ -131,9 +158,9 @@ const StudentDashboard = () => {
     },
     { 
       number: 3, 
-      title: "Payment", 
-      icon: CreditCard,
-      description: "Complete your payment to submit the order"
+      title: "Student Information", 
+      icon: Settings,
+      description: "Enter your name and student ID"
     }
   ];
 
@@ -243,10 +270,36 @@ const StudentDashboard = () => {
                   <div className="p-2 rounded-full bg-primary/10">
                     <CreditCard className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-xl font-semibold ml-3">Payment</h2>
+                  <h2 className="text-xl font-semibold ml-3">Student Information</h2>
                 </div>
                 
                 <div className="mb-6">
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">Your Name</label>
+                      <input
+                        type="text"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        className="w-full p-3 rounded-lg border border-border bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">Student ID</label>
+                      <input
+                        type="text"
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                        className="w-full p-3 rounded-lg border border-border bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        placeholder="Enter your student ID (e.g., IEM/2023/001)"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
                   <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 mb-6">
                     <h3 className="font-medium mb-3">Order Summary</h3>
                     <div className="space-y-2 text-sm">
