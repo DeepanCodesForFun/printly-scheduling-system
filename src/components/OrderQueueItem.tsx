@@ -1,8 +1,7 @@
-
 import { motion } from "framer-motion";
 import { User, Calendar, FileText, Clock, Printer } from "lucide-react";
 import { useState } from "react";
-import { PrintOrder } from "@/services/printOrderService";
+import { PrintOrder } from "@/services/printOrder";
 
 interface OrderQueueItemProps {
   order: PrintOrder;
@@ -12,7 +11,6 @@ interface OrderQueueItemProps {
 const OrderQueueItem = ({ order, onProcessClick }: OrderQueueItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Format the timestamp to a more readable format
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {

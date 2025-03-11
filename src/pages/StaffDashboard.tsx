@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -13,7 +12,7 @@ import {
   deletePrintOrder, 
   subscribeToOrders,
   PrintOrder
-} from "@/services/printOrderService";
+} from "@/services/printOrder";
 
 const StaffDashboard = () => {
   const [printOrders, setPrintOrders] = useState<PrintOrder[]>([]);
@@ -24,11 +23,9 @@ const StaffDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   
-  // Load orders on component mount
   useEffect(() => {
     fetchPrintOrders();
     
-    // Subscribe to real-time updates
     const unsubscribe = subscribeToOrders((updatedOrders) => {
       setPrintOrders(updatedOrders);
       updateStats(updatedOrders);
@@ -39,17 +36,14 @@ const StaffDashboard = () => {
     };
   }, []);
   
-  // Update stats when orders change
   useEffect(() => {
     updateStats(printOrders);
   }, [printOrders]);
   
   const updateStats = (orders: PrintOrder[]) => {
-    // Count pending orders
     const pending = orders.filter(order => order.status === 'pending').length;
     setPendingCount(pending);
     
-    // Count completed orders from today
     const today = new Date().toISOString().split('T')[0];
     const completed = orders.filter(order => {
       return order.status === 'completed' && 
@@ -96,7 +90,6 @@ const StaffDashboard = () => {
         await updateOrderStatus(selectedOrder.id, 'completed');
         toast.success(`Print job for ${selectedOrder.studentName} marked as complete`);
         
-        // Refresh the orders
         fetchPrintOrders();
       } catch (error) {
         console.error("Error completing order:", error);
@@ -114,7 +107,6 @@ const StaffDashboard = () => {
         await deletePrintOrder(selectedOrder.id);
         toast.info(`Print job for ${selectedOrder.studentName} has been deleted`);
         
-        // Refresh the orders
         fetchPrintOrders();
       } catch (error) {
         console.error("Error deleting order:", error);
@@ -126,7 +118,6 @@ const StaffDashboard = () => {
     }
   };
 
-  // Filter orders based on search term
   const filteredOrders = printOrders.filter(order => 
     order.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.studentId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,7 +129,6 @@ const StaffDashboard = () => {
       
       <main className="flex-1 pt-24 pb-12 px-6 md:px-12 lg:px-24">
         <div className="max-w-6xl mx-auto">
-          {/* Page Title */}
           <div className="mb-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -150,7 +140,6 @@ const StaffDashboard = () => {
             </motion.div>
           </div>
           
-          {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <motion.div
               className="glass-card dark:glass-card-dark rounded-xl p-6"
@@ -219,7 +208,6 @@ const StaffDashboard = () => {
             </motion.div>
           </div>
           
-          {/* Queue Management */}
           <motion.div
             className="glass-card dark:glass-card-dark rounded-xl overflow-hidden mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -283,7 +271,6 @@ const StaffDashboard = () => {
       
       <Footer />
       
-      {/* Print Job Modal */}
       <PrintJobModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

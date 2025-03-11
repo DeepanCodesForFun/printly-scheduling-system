@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, FileText, File, Printer, Check, User, Calendar, Clock } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { PrintOrder } from "@/services/printOrderService";
+import { PrintOrder } from "@/services/printOrder";
 import { getFileUrl } from "@/utils/pdfUtils";
 
 interface PrintJobModalProps {
