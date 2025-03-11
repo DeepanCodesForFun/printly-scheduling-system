@@ -98,6 +98,17 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
       throw new Error('Failed to save file information');
     }
     
+    // After creating a new order, check if there are any active orders
+    const { data: activeOrders } = await supabase
+      .from('print_orders')
+      .select('*')
+      .eq('is_active', true);
+      
+    // If there are no active orders, activate this one
+    if (!activeOrders || activeOrders.length === 0) {
+      await activateNextOrder();
+    }
+    
     return orderId;
   } catch (error) {
     console.error('Error processing files:', error);
@@ -231,7 +242,10 @@ export const activateNextOrder = async (): Promise<void> => {
     // Update the order to active
     const { error } = await supabase
       .from('print_orders')
-      .update({ is_active: true })
+      .update({ 
+        is_active: true,
+        status: 'pending' // Ensure status is still pending
+      })
       .eq('id', orderId);
     
     if (error) {
@@ -245,11 +259,14 @@ export const activateNextOrder = async (): Promise<void> => {
  * Update order status
  */
 export const updateOrderStatus = async (orderId: string, status: string): Promise<void> => {
+  // For completed orders, deactivate them
+  const isActive = status !== 'completed';
+  
   const { error } = await supabase
     .from('print_orders')
     .update({
       status: status,
-      is_active: status === 'pending'
+      is_active: isActive
     })
     .eq('id', orderId);
   
