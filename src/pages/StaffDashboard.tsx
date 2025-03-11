@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OrderQueueItem from "@/components/OrderQueueItem";
 import PrintJobModal from "@/components/PrintJobModal";
+import { resetQueueStatus } from "@/services/printOrder/queueManagement";
 import { 
   getPrintOrders, 
   updateOrderStatus, 
@@ -23,8 +24,27 @@ const StaffDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   
+  // Get current date in IST (UTC+5:30)
+  const getCurrentDateIST = () => {
+    const now = new Date();
+    // Add 5 hours and 30 minutes to UTC to get IST
+    const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000)); 
+    return istTime.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  };
+
+  // Inside the StaffDashboard component
   useEffect(() => {
-    fetchPrintOrders();
+    const initializeQueue = async () => {
+      try {
+        await resetQueueStatus();
+        fetchPrintOrders();
+      } catch (error) {
+        console.error("Error initializing queue:", error);
+        toast.error("Failed to initialize print queue");
+      }
+    };
+    
+    initializeQueue();
     
     const unsubscribe = subscribeToOrders((updatedOrders) => {
       setPrintOrders(updatedOrders);
@@ -35,21 +55,31 @@ const StaffDashboard = () => {
       unsubscribe();
     };
   }, []);
+
   
-  useEffect(() => {
-    updateStats(printOrders);
-  }, [printOrders]);
   
   const updateStats = (orders: PrintOrder[]) => {
+    // Log order statuses to debug
+    console.log("Order statuses:", orders.map(o => o.status));
+    
     const pending = orders.filter(order => order.status === 'pending').length;
     setPendingCount(pending);
+    console.log("Calculated pending count:", pending);
     
-    const today = new Date().toISOString().split('T')[0];
+    const todayIST = getCurrentDateIST();
+    console.log("Today in IST:", todayIST);
+    
     const completed = orders.filter(order => {
-      return order.status === 'completed' && 
-        order.timestamp.split('T')[0] === today;
+      const orderDate = order.timestamp.split('T')[0];
+      const isCompletedToday = order.status === 'completed' && orderDate === todayIST;
+      if (order.status === 'completed') {
+        console.log(`Order ${order.id}: Date ${orderDate}, Today ${todayIST}, Match: ${isCompletedToday}`);
+      }
+      return isCompletedToday;
     }).length;
+    
     setCompletedCount(completed);
+    console.log("Calculated completed count:", completed);
   };
 
   const fetchPrintOrders = async () => {
@@ -58,6 +88,7 @@ const StaffDashboard = () => {
     try {
       const orders = await getPrintOrders();
       setPrintOrders(orders);
+      updateStats(orders); // Add this line
     } catch (error) {
       console.error("Error fetching print orders:", error);
       toast.error("Failed to load print queue");
@@ -65,6 +96,8 @@ const StaffDashboard = () => {
       setIsLoading(false);
     }
   };
+
+  
 
   const handleRefresh = () => {
     fetchPrintOrders();
@@ -118,10 +151,15 @@ const StaffDashboard = () => {
     }
   };
 
-  const filteredOrders = printOrders.filter(order => 
+  const filteredOrders = printOrders
+  .filter(order => 
     order.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.studentId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
+  .sort((a, b) => {
+    // Sort by timestamp (oldest first for FIFO)
+    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -252,11 +290,12 @@ const StaffDashboard = () => {
                   <p className="text-muted-foreground mt-4">Loading print requests...</p>
                 </div>
               ) : filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
+                filteredOrders.map((order, index) => (
                   <OrderQueueItem
                     key={order.id}
                     order={order}
                     onProcessClick={handleProcessOrder}
+                    isFirstItem={index === 0}
                   />
                 ))
               ) : (

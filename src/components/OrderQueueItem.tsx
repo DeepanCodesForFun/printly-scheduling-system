@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { User, Calendar, FileText, Clock, Printer } from "lucide-react";
 import { useState } from "react";
@@ -7,9 +6,10 @@ import { PrintOrder } from "@/services/printOrder";
 interface OrderQueueItemProps {
   order: PrintOrder;
   onProcessClick: (orderId: string) => void;
+  isFirstItem: boolean;
 }
 
-const OrderQueueItem = ({ order, onProcessClick }: OrderQueueItemProps) => {
+const OrderQueueItem = ({ order, onProcessClick, isFirstItem }: OrderQueueItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const formatTime = (timestamp: string) => {
@@ -23,10 +23,12 @@ const OrderQueueItem = ({ order, onProcessClick }: OrderQueueItemProps) => {
     }).format(date);
   };
 
+  const isActive = isFirstItem;
+
   return (
     <motion.div
       className={`glass-card dark:glass-card-dark rounded-xl overflow-hidden ${
-        order.isActive 
+        isActive 
           ? "border-2 border-primary/30 dark:border-primary/50" 
           : "opacity-80"
       }`}
@@ -72,26 +74,26 @@ const OrderQueueItem = ({ order, onProcessClick }: OrderQueueItemProps) => {
         </div>
         
         <div className={`p-4 md:p-6 md:ml-4 md:border-l border-border flex flex-col items-center justify-center ${
-          !order.isActive ? "opacity-50 cursor-not-allowed" : ""
+          !isActive ? "opacity-50 cursor-not-allowed" : ""
         }`}>
           <motion.button
-            disabled={!order.isActive}
+            disabled={!isActive}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-colors ${
-              order.isActive
+              isActive
                 ? "bg-primary text-white hover:bg-primary/90"
                 : "bg-muted text-muted-foreground"
             }`}
-            whileHover={order.isActive ? { scale: 1.03 } : {}}
-            whileTap={order.isActive ? { scale: 0.98 } : {}}
-            onClick={() => order.isActive && onProcessClick(order.id)}
+            whileHover={isActive ? { scale: 1.03 } : {}}
+            whileTap={isActive ? { scale: 0.98 } : {}}
+            onClick={() => isActive && onProcessClick(order.id)}
           >
             <Printer className="h-4 w-4" />
-            <span>{order.isActive ? "Process" : "Waiting"}</span>
+            <span>{isActive ? "Process" : "Waiting"}</span>
           </motion.button>
         </div>
       </div>
       
-      {order.isActive && (
+      {isActive && (
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ 

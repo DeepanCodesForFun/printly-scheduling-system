@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { PrintOrder } from "@/services/printOrder";
 import { getFileUrl } from "@/utils/pdfUtils";
+import { deletePrintOrder } from "@/services/printOrder/queueManagement";
 
 interface PrintJobModalProps {
   isOpen: boolean;
@@ -75,6 +76,19 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
     });
   };
   
+  const handleCompleteOrder = async () => {
+    if (orderData) {
+      try {
+        await deletePrintOrder(orderData.id);
+        toast.success(`Print job for ${orderData.studentName} marked as complete and deleted`);
+        onComplete();
+      } catch (error) {
+        console.error("Error completing order:", error);
+        toast.error("Failed to complete and delete print job");
+      }
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && orderData && (
@@ -224,7 +238,7 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                 className="px-5 py-2.5 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-lg flex items-center"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={onComplete}
+                onClick={handleCompleteOrder}
               >
                 <Check className="h-4 w-4 mr-2" />
                 Mark as Complete
