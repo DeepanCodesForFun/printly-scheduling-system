@@ -162,7 +162,7 @@ export const getPrintOrders = async (): Promise<PrintOrder[]> => {
         config: {
           color: configData?.color || 'Black & White',
           sides: configData?.sides || 'Single-sided',
-          copies: String(configData?.copies || 1) // Convert number to string
+          copies: configData?.copies?.toString() || '1' // Fix: Convert number to string properly
         }
       };
     })
@@ -219,7 +219,7 @@ export const getPrintOrderById = async (orderId: string): Promise<PrintOrder> =>
     config: {
       color: configData?.color || 'Black & White',
       sides: configData?.sides || 'Single-sided',
-      copies: String(configData?.copies || 1) // Convert number to string
+      copies: configData?.copies?.toString() || '1' // Fix: Convert number to string properly
     }
   };
 };
