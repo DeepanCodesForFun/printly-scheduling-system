@@ -294,7 +294,7 @@ const StudentDashboard = () => {
                         value={studentId}
                         onChange={(e) => setStudentId(e.target.value)}
                         className="w-full p-3 rounded-lg border border-border bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        placeholder="Enter your student ID (e.g., IEM/2023/001)"
+                        placeholder="Enter your IEM ID (e.g., 12023052016044)"
                         required
                       />
                     </div>
