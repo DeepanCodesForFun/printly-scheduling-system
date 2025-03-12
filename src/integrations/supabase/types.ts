@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      completed_orders: {
+        Row: {
+          id: number
+          order_id: string
+          student_id: string
+          student_name: string
+          timestamp: string
+        }
+        Insert: {
+          id?: number
+          order_id: string
+          student_id: string
+          student_name: string
+          timestamp?: string
+        }
+        Update: {
+          id?: number
+          order_id?: string
+          student_id?: string
+          student_name?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       print_configs: {
         Row: {
           color: string
