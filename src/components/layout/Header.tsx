@@ -26,8 +26,10 @@ const Header = () => {
 
   return (
     <header className="w-full py-4 px-6 md:px-12 lg:px-24 backdrop-blur-lg bg-white/80 dark:bg-black/30 fixed top-0 z-50 relative">
-      {/* Glowing border effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/70 to-transparent shadow-[0_0_8px_1px_hsl(var(--primary))]"></div>
+      {/* Refined glowing border effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent">
+        <div className="absolute inset-0 blur-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+      </div>
       
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link to="/">
