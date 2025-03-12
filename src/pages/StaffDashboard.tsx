@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -59,26 +60,32 @@ const StaffDashboard = () => {
   
   
   const updateStats = (orders: PrintOrder[]) => {
-    // Log order statuses to debug
-    console.log("Order statuses:", orders.map(o => o.status));
-    
+    // Count pending orders
     const pending = orders.filter(order => order.status === 'pending').length;
     setPendingCount(pending);
-    console.log("Calculated pending count:", pending);
     
+    // Get today's date for comparison
     const todayIST = getCurrentDateIST();
-    console.log("Today in IST:", todayIST);
     
+    // Fix for completed orders counting: 
+    // We need to check all orders (including both pending and completed) 
+    // and count the ones that have status 'completed' and were completed today
     const completed = orders.filter(order => {
-      const orderDate = order.timestamp.split('T')[0];
-      const isCompletedToday = order.status === 'completed' && orderDate === todayIST;
-      if (order.status === 'completed') {
-        console.log(`Order ${order.id}: Date ${orderDate}, Today ${todayIST}, Match: ${isCompletedToday}`);
-      }
-      return isCompletedToday;
+      if (order.status !== 'completed') return false;
+      
+      // Extract the date part from the timestamp
+      const orderDate = new Date(order.timestamp).toISOString().split('T')[0];
+      
+      // Compare with today's date
+      return orderDate === todayIST;
     }).length;
     
     setCompletedCount(completed);
+    
+    // For debugging
+    console.log("Order statuses:", orders.map(o => o.status));
+    console.log("Calculated pending count:", pending);
+    console.log("Today in IST:", todayIST);
     console.log("Calculated completed count:", completed);
   };
 
@@ -88,7 +95,7 @@ const StaffDashboard = () => {
     try {
       const orders = await getPrintOrders();
       setPrintOrders(orders);
-      updateStats(orders); // Add this line
+      updateStats(orders);
     } catch (error) {
       console.error("Error fetching print orders:", error);
       toast.error("Failed to load print queue");
