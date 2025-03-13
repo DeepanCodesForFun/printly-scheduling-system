@@ -1,12 +1,14 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Printer, Sun, Moon } from "lucide-react";
+import { Printer, Sun, Moon, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const Header = () => {
   const location = useLocation();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const isStaffAuthenticated = localStorage.getItem("staffAuthenticated") === "true";
   
   useEffect(() => {
     const isDark = localStorage.getItem("darkMode") === "true";
@@ -22,6 +24,12 @@ const Header = () => {
     setIsDarkMode(!isDarkMode);
     localStorage.setItem("darkMode", (!isDarkMode).toString());
     document.documentElement.classList.toggle("dark");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("staffAuthenticated");
+    toast.success("Logged out successfully");
+    window.location.href = "/";
   };
 
   return (
@@ -64,7 +72,7 @@ const Header = () => {
                   className="hidden md:block"
                 >
                   <Link 
-                    to="/staff" 
+                    to="/staff-login" 
                     className="text-sm font-medium text-foreground hover:text-primary transition-colors"
                   >
                     Staff Portal
@@ -72,7 +80,7 @@ const Header = () => {
                 </motion.div>
               )}
               
-              {location.pathname === "/staff" && (
+              {(location.pathname === "/staff-login" || location.pathname === "/staff") && (
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="hidden md:block"
@@ -83,6 +91,17 @@ const Header = () => {
                   >
                     Student Portal
                   </Link>
+                </motion.div>
+              )}
+              
+              {isStaffAuthenticated && location.pathname === "/staff" && (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  onClick={handleLogout}
+                  className="hidden md:flex items-center gap-1 cursor-pointer text-sm font-medium text-foreground hover:text-primary transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
                 </motion.div>
               )}
             </>

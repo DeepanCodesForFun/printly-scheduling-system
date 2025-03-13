@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import StudentDashboard from "./pages/StudentDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
+import StaffLogin from "./pages/StaffLogin";
 import AnimatedPageTransition from "./components/AnimatedPageTransition";
 import CursorParticles from "./components/CursorParticles";
 
@@ -25,12 +26,28 @@ const AnimatedRoutes = () => {
         <Routes location={location}>
           <Route path="/" element={<Index />} />
           <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/staff" element={<StaffDashboard />} />
+          <Route path="/staff-login" element={<StaffLogin />} />
+          <Route path="/staff" element={<StaffAuthCheck />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatedPageTransition>
     </AnimatePresence>
   );
+};
+
+// Authentication wrapper component
+const StaffAuthCheck = () => {
+  const navigate = useLocation();
+  const isAuthenticated = localStorage.getItem("staffAuthenticated") === "true";
+  
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    window.location.href = "/staff-login";
+    return null;
+  }
+  
+  // If authenticated, render the staff dashboard
+  return <StaffDashboard />;
 };
 
 const App = () => (
