@@ -33,13 +33,13 @@ const printConfigs = [
       { id: "1", label: "1 Copy", value: "1" },
       { id: "2", label: "2 Copies", value: "2" },
       { id: "3", label: "3 Copies", value: "3" },
-      { id: "3", label: "3 Copies", value: "4" },
-      { id: "3", label: "3 Copies", value: "5" },
-      { id: "3", label: "3 Copies", value: "6" },
-      { id: "3", label: "3 Copies", value: "7" },
-      { id: "3", label: "3 Copies", value: "8" },
-      { id: "3", label: "3 Copies", value: "9" },
-      { id: "3", label: "3 Copies", value: "10" },
+      { id: "4", label: "4 Copies", value: "4" },
+      { id: "5", label: "5 Copies", value: "5" },
+      { id: "6", label: "6 Copies", value: "6" },
+      { id: "7", label: "7 Copies", value: "7" },
+      { id: "8", label: "8 Copies", value: "8" },
+      { id: "9", label: "9 Copies", value: "9" },
+      { id: "10", label: "10 Copies", value: "10" },
       
     ]
   }
