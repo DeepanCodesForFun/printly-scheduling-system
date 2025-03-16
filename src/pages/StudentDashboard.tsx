@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import FileUploader from "@/components/FileUploader";
 import PrintConfigCard from "@/components/PrintConfigCard";
 import { createPrintOrder } from "@/services/printOrderService";
+import { V } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
 
 const printConfigs = [
   {
@@ -31,7 +32,15 @@ const printConfigs = [
     options: [
       { id: "1", label: "1 Copy", value: "1" },
       { id: "2", label: "2 Copies", value: "2" },
-      { id: "3", label: "3 Copies", value: "3" }
+      { id: "3", label: "3 Copies", value: "3" },
+      { id: "3", label: "3 Copies", value: "4" },
+      { id: "3", label: "3 Copies", value: "5" },
+      { id: "3", label: "3 Copies", value: "6" },
+      { id: "3", label: "3 Copies", value: "7" },
+      { id: "3", label: "3 Copies", value: "8" },
+      { id: "3", label: "3 Copies", value: "9" },
+      { id: "3", label: "3 Copies", value: "10" },
+      
     ]
   }
 ];
