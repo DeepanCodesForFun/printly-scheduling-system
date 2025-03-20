@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -7,7 +8,6 @@ import Footer from "@/components/layout/Footer";
 import FileUploader from "@/components/FileUploader";
 import PrintConfigCard from "@/components/PrintConfigCard";
 import { createPrintOrder } from "@/services/printOrderService";
-import { V } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
 
 const printConfigs = [
   {
