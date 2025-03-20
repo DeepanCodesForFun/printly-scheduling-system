@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { uploadPdfFiles } from "@/utils/pdfUtils";
 import { CreateOrderParams } from "./types";
@@ -8,7 +7,7 @@ import { activateNextOrder } from "./queueManagement";
  * Create a new print order in the database
  */
 export const createPrintOrder = async (params: CreateOrderParams): Promise<string> => {
-  const { studentName, studentId, files, config, amount } = params;
+  const { studentName, studentId, files, config, amount, additionalDetails } = params;
   
   // Insert order into database
   const { data: orderData, error: orderError } = await supabase
@@ -17,7 +16,8 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
       student_name: studentName,
       student_id: studentId,
       amount: amount,
-      is_active: false
+      is_active: false,
+      additional_details: additionalDetails
     })
     .select()
     .single();

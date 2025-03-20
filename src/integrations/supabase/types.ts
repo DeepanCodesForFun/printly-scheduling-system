@@ -105,6 +105,7 @@ export type Database = {
       }
       print_orders: {
         Row: {
+          additional_details: string | null
           amount: number
           id: string
           is_active: boolean
@@ -114,6 +115,7 @@ export type Database = {
           timestamp: string
         }
         Insert: {
+          additional_details?: string | null
           amount: number
           id?: string
           is_active?: boolean
@@ -123,6 +125,7 @@ export type Database = {
           timestamp?: string
         }
         Update: {
+          additional_details?: string | null
           amount?: number
           id?: string
           is_active?: boolean

@@ -11,6 +11,7 @@ export interface PrintOrder {
   isActive: boolean;
   fileCount: number;
   amount: number;
+  additionalDetails?: string;
   files: {
     name: string;
     type: string;
@@ -34,4 +35,5 @@ export interface CreateOrderParams {
     copies: string;
   };
   amount: number;
+  additionalDetails?: string;
 }

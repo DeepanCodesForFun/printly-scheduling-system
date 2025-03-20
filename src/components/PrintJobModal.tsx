@@ -1,6 +1,5 @@
-
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Printer, Check } from "lucide-react";
+import { X, Printer, Check, FileText, Info } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { PrintOrder } from "@/services/printOrder";
@@ -93,6 +92,22 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                   />
                   
                   <PrintConfigCard config={orderData.config} />
+                  
+                  {orderData.additionalDetails && (
+                    <div className="mt-6">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-2">Additional Instructions</h3>
+                      <div className="glass-card dark:glass-card-dark rounded-xl p-4">
+                        <div className="flex items-start">
+                          <div className="p-1.5 bg-primary/10 rounded-full mr-3 mt-0.5">
+                            <Info className="h-4 w-4 text-primary" />
+                          </div>
+                          <p className="text-sm">
+                            {orderData.additionalDetails}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div>

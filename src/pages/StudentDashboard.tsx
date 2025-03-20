@@ -57,6 +57,7 @@ const StudentDashboard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [studentName, setStudentName] = useState("");
   const [studentId, setStudentId] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
 
   const handleFilesChange = (newFiles: File[], newTotalPages?: number) => {
     setFiles(newFiles);
@@ -114,7 +115,8 @@ const StudentDashboard = () => {
         studentId,
         files,
         config,
-        amount: parseFloat(calculatePrice())
+        amount: parseFloat(calculatePrice()),
+        additionalDetails: additionalDetails.trim() || undefined
       });
       
       toast.success("Your print request has been submitted!");
@@ -128,6 +130,7 @@ const StudentDashboard = () => {
       setCurrentStep(1);
       setStudentName("");
       setStudentId("");
+      setAdditionalDetails("");
     } catch (error) {
       console.error("Error submitting order:", error);
       toast.error("Failed to submit print request. Please try again.");
@@ -306,6 +309,28 @@ const StudentDashboard = () => {
                         placeholder="Enter your IEM ID (e.g., 12023052016044)"
                         required
                       />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">
+                        Additional Instructions <span className="text-muted-foreground">(Optional)</span>
+                      </label>
+                      <textarea
+                        value={additionalDetails}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 200) {
+                            setAdditionalDetails(e.target.value);
+                          }
+                        }}
+                        className="w-full p-3 rounded-lg border border-border bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-y min-h-[80px]"
+                        placeholder="Enter binding instructions or other details (200 characters max)"
+                        maxLength={200}
+                      />
+                      <div className="flex justify-end mt-1">
+                        <span className="text-sm text-muted-foreground">
+                          {additionalDetails.length}/200
+                        </span>
+                      </div>
                     </div>
                   </div>
                   

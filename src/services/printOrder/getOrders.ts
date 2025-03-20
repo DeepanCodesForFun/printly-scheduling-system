@@ -40,6 +40,7 @@ export const getPrintOrders = async (): Promise<PrintOrder[]> => {
         isActive: order.is_active,
         fileCount: filesData?.length || 0,
         amount: order.amount,
+        additionalDetails: order.additional_details || '',
         files: filesData?.map(file => ({
           name: file.file_name,
           type: file.file_type.split('/').pop(),
@@ -101,6 +102,7 @@ export const getPrintOrderById = async (orderId: string): Promise<PrintOrder> =>
     isActive: order.is_active,
     fileCount: fileDetails.length,
     amount: order.amount,
+    additionalDetails: order.additional_details || '',
     files: fileDetails,
     config: {
       color: configData?.color || 'Black & White',
