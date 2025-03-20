@@ -11,7 +11,7 @@ const StepContent = () => {
 
   // Here we add the mockup as step "1.5" just for demonstration
   // In a real implementation, we'd modify the entire step flow
-  const showMockup = false; // Toggle this to true to see the mockup
+  const showMockup = true; // Now showing the mockup for demonstration
 
   return (
     <motion.div
@@ -22,8 +22,12 @@ const StepContent = () => {
       transition={{ duration: 0.5 }}
       className="glass-card dark:glass-card-dark rounded-2xl p-6 md:p-8 mb-8"
     >
-      {currentStep === 1 && !showMockup && <FileUploadStep />}
-      {currentStep === 1 && showMockup && <FileConfigMockupStep />}
+      {currentStep === 1 && <FileUploadStep />}
+      {currentStep === 1 && showMockup && (
+        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <FileConfigMockupStep />
+        </div>
+      )}
       {currentStep === 2 && <ConfigureStep />}
       {currentStep === 3 && <StudentInfoStep />}
     </motion.div>
