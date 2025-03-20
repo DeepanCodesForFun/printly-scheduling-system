@@ -1,6 +1,6 @@
 
 import { Upload } from "lucide-react";
-import FileUploader from "@/components/FileUploader";
+import FileUploader from "@/components/file-uploader";
 import { usePrintOrder } from "@/contexts/PrintOrderContext";
 
 const FileUploadStep = () => {
