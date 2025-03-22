@@ -1,3 +1,4 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Printer, Check, FileText, Info } from "lucide-react";
 import { useEffect } from "react";
@@ -113,7 +114,7 @@ const PrintJobModal = ({ isOpen, onClose, onComplete, onDelete, orderData }: Pri
                 <div>
                   <FilesList files={orderData.files} />
                   
-                  <FileActionButtons files={orderData.files} />
+                  <FileActionButtons files={orderData.files} fileGroups={orderData.fileGroups} />
                 </div>
               </div>
             </div>

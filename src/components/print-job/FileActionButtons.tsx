@@ -1,62 +1,103 @@
 
 import { motion } from "framer-motion";
-import { Download, Printer } from "lucide-react";
+import { Download, FileArchive } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { getFileUrl } from "@/utils/pdfUtils";
+import { getFileDownloadUrl } from "@/utils/pdfMergeUtils";
+import { PrintOrder } from "@/services/printOrder/types";
 
 interface FileActionButtonsProps {
   files: {
     name: string;
+    type: string;
+    size: number;
     path?: string;
   }[];
+  fileGroups?: PrintOrder['fileGroups'];
 }
 
-const FileActionButtons = ({ files }: FileActionButtonsProps) => {
-  const handleDownloadAll = () => {
-    files.forEach((file) => {
-      if (file.path) {
-        const url = getFileUrl(file.path);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-    });
+const FileActionButtons = ({ files, fileGroups }: FileActionButtonsProps) => {
+  const downloadFile = async (path?: string, name?: string) => {
+    if (!path) {
+      toast.error("File path not available");
+      return;
+    }
     
-    toast.success("All files are being downloaded", {
-      description: "Files are being prepared for download"
-    });
+    try {
+      // Get a download URL for the file
+      const url = await getFileDownloadUrl(path);
+      
+      // Create an anchor element to trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name || 'download.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      toast.success("File download started");
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error("Failed to download file");
+    }
   };
   
-  const handlePrintAll = () => {
-    toast.success("Print job started", {
-      description: "All files have been sent to the printer"
-    });
-  };
-
+  const hasFiles = files && files.length > 0;
+  const hasMergedFiles = fileGroups && fileGroups.length > 0 && fileGroups.some(g => g.mergedFilePath);
+  
+  if (!hasFiles && !hasMergedFiles) return null;
+  
   return (
-    <div className="mt-4">
-      <motion.button
-        className="w-full bg-secondary hover:bg-secondary/70 text-primary font-medium py-3 rounded-xl flex items-center justify-center mb-3"
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleDownloadAll}
-      >
-        <Download className="h-4 w-4 mr-2" />
-        Download All Files
-      </motion.button>
+    <div className="mt-6">
+      <h3 className="text-sm font-medium text-muted-foreground mb-3">Actions</h3>
       
-      <motion.button
-        className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-xl flex items-center justify-center"
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handlePrintAll}
-      >
-        <Printer className="h-4 w-4 mr-2" />
-        Print All
-      </motion.button>
+      <div className="flex flex-wrap gap-2">
+        {hasFiles && (
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center"
+              onClick={() => {
+                if (files[0].path) {
+                  downloadFile(files[0].path, files[0].name);
+                } else {
+                  toast.error("File path not available");
+                }
+              }}
+            >
+              <Download size={14} className="mr-2" />
+              Download Individual Files
+            </Button>
+          </motion.div>
+        )}
+        
+        {hasMergedFiles && (
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              variant="default" 
+              size="sm"
+              className="flex items-center"
+              onClick={() => {
+                if (fileGroups && fileGroups[0].mergedFilePath) {
+                  downloadFile(fileGroups[0].mergedFilePath, 'merged.pdf');
+                } else {
+                  toast.error("Merged file not available");
+                }
+              }}
+            >
+              <FileArchive size={14} className="mr-2" />
+              Download Merged File
+            </Button>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };

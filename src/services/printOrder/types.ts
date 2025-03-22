@@ -17,12 +17,26 @@ export interface PrintOrder {
     type: string;
     size: number;
     path?: string;
+    config?: FileConfig;
+    configGroup?: string;
   }[];
   config: {
     color: string;
     sides: string;
     copies: string;
   };
+  fileGroups?: {
+    groupKey: string;
+    config: FileConfig;
+    fileCount: number;
+    mergedFilePath?: string;
+  }[];
+}
+
+export interface FileConfig {
+  color: string;
+  sides: string;
+  copies: string;
 }
 
 export interface CreateOrderParams {
@@ -36,4 +50,5 @@ export interface CreateOrderParams {
   };
   amount: number;
   additionalDetails?: string;
+  fileConfigs?: FileConfig[];
 }
