@@ -5,3 +5,6 @@ export * from './createOrder';
 export * from './getOrders';
 export * from './queueManagement';
 export * from './realtime';
+
+// Additional utility functions that were previously scattered
+export * from './utils';

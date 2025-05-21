@@ -3,42 +3,41 @@ import { motion } from "framer-motion";
 import { Download, FileArchive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { getFileDownloadUrl } from "@/utils/pdfMergeUtils";
 import { PrintOrder } from "@/services/printOrder/types";
+import { downloadOrderFile, getDownloadFileName } from "@/services/printOrder";
 
 interface FileActionButtonsProps {
-  files: {
-    name: string;
-    type: string;
-    size: number;
-    path?: string;
-  }[];
-  fileGroups?: PrintOrder['fileGroups'];
+  order: PrintOrder;
 }
 
-const FileActionButtons = ({ files, fileGroups }: FileActionButtonsProps) => {
-  const downloadFile = async (path?: string, name?: string) => {
-    if (!path) {
+const FileActionButtons = ({ order }: FileActionButtonsProps) => {
+  const { files, fileGroups } = order;
+  
+  const handleFileDownload = async (index: number) => {
+    if (!files[index]?.path) {
       toast.error("File path not available");
       return;
     }
     
     try {
-      // Get a download URL for the file
-      const url = await getFileDownloadUrl(path);
-      
-      // Create an anchor element to trigger the download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name || 'download.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      
+      await downloadOrderFile(files[index].path!, getDownloadFileName(order, index));
       toast.success("File download started");
     } catch (error) {
-      console.error("Error downloading file:", error);
       toast.error("Failed to download file");
+    }
+  };
+  
+  const handleMergedDownload = async () => {
+    if (!fileGroups || fileGroups.length === 0 || !fileGroups[0].mergedFilePath) {
+      toast.error("Merged file not available");
+      return;
+    }
+    
+    try {
+      await downloadOrderFile(fileGroups[0].mergedFilePath, getDownloadFileName(order));
+      toast.success("Merged file download started");
+    } catch (error) {
+      toast.error("Failed to download merged file");
     }
   };
   
@@ -61,13 +60,7 @@ const FileActionButtons = ({ files, fileGroups }: FileActionButtonsProps) => {
               variant="outline" 
               size="sm"
               className="flex items-center"
-              onClick={() => {
-                if (files[0].path) {
-                  downloadFile(files[0].path, files[0].name);
-                } else {
-                  toast.error("File path not available");
-                }
-              }}
+              onClick={() => handleFileDownload(0)}
             >
               <Download size={14} className="mr-2" />
               Download Individual Files
@@ -84,13 +77,7 @@ const FileActionButtons = ({ files, fileGroups }: FileActionButtonsProps) => {
               variant="default" 
               size="sm"
               className="flex items-center"
-              onClick={() => {
-                if (fileGroups && fileGroups[0].mergedFilePath) {
-                  downloadFile(fileGroups[0].mergedFilePath, 'merged.pdf');
-                } else {
-                  toast.error("Merged file not available");
-                }
-              }}
+              onClick={handleMergedDownload}
             >
               <FileArchive size={14} className="mr-2" />
               Download Merged File
