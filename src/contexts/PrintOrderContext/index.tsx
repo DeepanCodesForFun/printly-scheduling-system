@@ -24,3 +24,4 @@ export const usePrintOrder = () => {
 
 // Re-export types
 export * from "./types";
+export * from "./utils";
