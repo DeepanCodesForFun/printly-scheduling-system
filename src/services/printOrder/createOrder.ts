@@ -72,6 +72,7 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
           config: fileConfig
         };
       }
+      
       configGroups[configKey].files.push({ filePath, fileInfo });
       
       return {
@@ -83,7 +84,7 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
         storage_path: filePath,
         config_color: fileConfig.color,
         config_sides: fileConfig.sides,
-        config_copies: fileConfig.copies,
+        config_copies: parseInt(fileConfig.copies),
         config_group: configKey
       };
     });
@@ -118,20 +119,22 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
           const filePaths = group.files.map(f => f.filePath);
           const mergedPdfPath = await mergePDFs(filePaths, orderId, groupKey, coverPage);
           
-          // Update the group with the merged PDF path
-          const { error: mergeError } = await supabase
-            .from('print_file_groups')
-            .insert({
-              order_id: orderId,
-              config_group: groupKey,
-              merged_file_path: mergedPdfPath,
-              config_color: group.config.color,
-              config_sides: group.config.sides,
-              config_copies: group.config.copies
-            });
+          // Insert the file group with the merged PDF path
+          const fileGroupData = {
+            order_id: orderId,
+            config_group: groupKey,
+            merged_file_path: mergedPdfPath,
+            config_color: group.config.color,
+            config_sides: group.config.sides,
+            config_copies: parseInt(group.config.copies)
+          };
           
-          if (mergeError) {
-            console.error('Error saving merged file path:', mergeError);
+          const { error: fileGroupError } = await supabase
+            .from('print_file_groups')
+            .insert(fileGroupData);
+          
+          if (fileGroupError) {
+            console.error('Error saving merged file path:', fileGroupError);
           }
         }
       } catch (mergeError) {
