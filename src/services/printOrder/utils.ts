@@ -7,6 +7,8 @@ import { PrintOrder } from "./types";
  */
 export const getOrderFileUrl = async (filePath: string): Promise<string> => {
   try {
+    console.log("Getting file URL for path:", filePath);
+    
     const { data } = supabase.storage
       .from('print_files')
       .getPublicUrl(filePath);
@@ -15,6 +17,7 @@ export const getOrderFileUrl = async (filePath: string): Promise<string> => {
       throw new Error("Could not get public URL");
     }
     
+    console.log("Generated public URL:", data.publicUrl);
     return data.publicUrl;
   } catch (error) {
     console.error("Error getting file URL:", error);
@@ -30,6 +33,22 @@ export const downloadOrderFile = async (
   fileName: string = 'download.pdf'
 ): Promise<void> => {
   try {
+    console.log("Starting download for file:", { filePath, fileName });
+    
+    // First check if the file exists in storage
+    const { data: fileExists, error: checkError } = await supabase.storage
+      .from('print_files')
+      .list('', {
+        search: filePath
+      });
+    
+    if (checkError) {
+      console.error("Error checking file existence:", checkError);
+      throw new Error(`File check failed: ${checkError.message}`);
+    }
+    
+    console.log("File check result:", fileExists);
+    
     // Get the public URL for the file
     const { data } = supabase.storage
       .from('print_files')
@@ -38,6 +57,8 @@ export const downloadOrderFile = async (
     if (!data.publicUrl) {
       throw new Error("Could not get file URL");
     }
+    
+    console.log("Using download URL:", data.publicUrl);
     
     // Create a temporary anchor element to trigger download
     const link = document.createElement('a');
@@ -52,7 +73,7 @@ export const downloadOrderFile = async (
     
   } catch (error) {
     console.error("Error downloading file:", error);
-    throw new Error("Could not download file");
+    throw new Error(`Could not download file: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 

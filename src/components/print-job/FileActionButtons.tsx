@@ -27,7 +27,8 @@ const FileActionButtons = ({ order }: FileActionButtonsProps) => {
       toast.success(`Download started for ${file.name}`);
     } catch (error) {
       console.error("Download error:", error);
-      toast.error(`Failed to download ${file.name}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to download ${file.name}: ${errorMessage}`);
     }
   };
   
@@ -48,7 +49,8 @@ const FileActionButtons = ({ order }: FileActionButtonsProps) => {
       toast.success("Merged file download started");
     } catch (error) {
       console.error("Merged download error:", error);
-      toast.error("Failed to download merged file");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to download merged file: ${errorMessage}`);
     }
   };
   
