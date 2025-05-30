@@ -15,13 +15,18 @@ const FileActionButtons = ({ order }: FileActionButtonsProps) => {
   
   const handleFileDownload = async (index: number) => {
     const file = files[index];
-    if (!file?.path) {
+    // Check for both path and storage_path properties
+    const filePath = file?.path || file?.storage_path;
+    
+    if (!filePath) {
+      console.error("File download error - no path found:", file);
       toast.error("File path not available for download");
       return;
     }
     
     try {
-      await downloadOrderFile(file.path, file.name);
+      console.log("Attempting to download file:", filePath);
+      await downloadOrderFile(filePath, file.name);
       toast.success(`Download started for ${file.name}`);
     } catch (error) {
       console.error("Download error:", error);

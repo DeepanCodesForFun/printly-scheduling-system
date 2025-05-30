@@ -62,6 +62,7 @@ export const getPrintOrders = async (): Promise<PrintOrder[]> => {
           name: file.file_name,
           type: file.file_type.split('/').pop(),
           size: file.file_size,
+          path: file.storage_path, // Map storage_path to path for consistency
           config: {
             color: file.config_color || configData?.color || 'bw',
             sides: file.config_sides || configData?.sides || 'single',
@@ -72,7 +73,7 @@ export const getPrintOrders = async (): Promise<PrintOrder[]> => {
         config: {
           color: configData?.color || 'Black & White',
           sides: configData?.sides || 'Single-sided',
-          copies: configData?.copies ? String(configData.copies) : '1' // Convert number to string
+          copies: configData?.copies ? String(configData.copies) : '1'
         },
         fileGroups
       };
@@ -131,7 +132,7 @@ export const getPrintOrderById = async (orderId: string): Promise<PrintOrder> =>
     name: file.file_name,
     type: file.file_type.split('/').pop(),
     size: file.file_size,
-    path: file.storage_path,
+    path: file.storage_path, // Map storage_path to path for consistency
     config: {
       color: file.config_color || configData?.color || 'bw',
       sides: file.config_sides || configData?.sides || 'single',
