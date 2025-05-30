@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { downloadFile, getFileDownloadUrl } from "@/utils/pdfMergeUtils";
 import { PrintOrder } from "./types";
 
 /**
@@ -8,7 +7,15 @@ import { PrintOrder } from "./types";
  */
 export const getOrderFileUrl = async (filePath: string): Promise<string> => {
   try {
-    return await getFileDownloadUrl(filePath);
+    const { data } = supabase.storage
+      .from('print_files')
+      .getPublicUrl(filePath);
+    
+    if (!data.publicUrl) {
+      throw new Error("Could not get public URL");
+    }
+    
+    return data.publicUrl;
   } catch (error) {
     console.error("Error getting file URL:", error);
     throw new Error("Could not retrieve file download URL");
@@ -23,15 +30,26 @@ export const downloadOrderFile = async (
   fileName: string = 'download.pdf'
 ): Promise<void> => {
   try {
-    const url = await getFileDownloadUrl(filePath);
+    // Get the public URL for the file
+    const { data } = supabase.storage
+      .from('print_files')
+      .getPublicUrl(filePath);
     
-    // Create an anchor element to trigger the download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    if (!data.publicUrl) {
+      throw new Error("Could not get file URL");
+    }
+    
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = data.publicUrl;
+    link.download = fileName;
+    link.target = '_blank';
+    
+    // Append to body, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
   } catch (error) {
     console.error("Error downloading file:", error);
     throw new Error("Could not download file");
@@ -46,5 +64,6 @@ export const getDownloadFileName = (order: PrintOrder, fileIndex?: number): stri
     return order.files[fileIndex].name;
   }
   
-  return `${order.studentName.replace(/\s+/g, '_')}_${order.studentId}_order.pdf`;
+  // For merged files, create a descriptive name
+  return `${order.studentName.replace(/\s+/g, '_')}_${order.studentId}_merged_order.pdf`;
 };

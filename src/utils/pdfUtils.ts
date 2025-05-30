@@ -77,21 +77,22 @@ export const uploadPdfFiles = async (files: File[], orderId: string): Promise<{
   try {
     const uploadPromises = files.map(async (file) => {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${orderId}/${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const timestamp = Date.now();
+      const fileName = `${orderId}/${timestamp}_${file.name}`;
       
       const { error: uploadError } = await supabase.storage
         .from('print_files')
-        .upload(filePath, file);
+        .upload(fileName, file);
       
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         throw uploadError;
       }
       
       const pageCount = await getPdfPageCount(file);
       
       return {
-        filePath,
+        filePath: fileName,
         fileInfo: {
           name: file.name,
           size: file.size,
