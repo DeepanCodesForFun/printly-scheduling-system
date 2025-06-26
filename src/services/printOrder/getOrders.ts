@@ -16,71 +16,45 @@ export const getPrintOrders = async (): Promise<PrintOrder[]> => {
     throw new Error('Failed to fetch print orders');
   }
   
-  const ordersWithDetails = await Promise.all(
-    orders.map(async (order) => {
-      // Get config
-      const { data: configData } = await supabase
-        .from('print_configs')
-        .select('*')
-        .eq('order_id', order.id)
-        .single();
-      
-      // Get files
-      const { data: filesData } = await supabase
-        .from('print_files')
-        .select('*')
-        .eq('order_id', order.id);
-      
-      // Get file groups (merged files)
-      const { data: fileGroupsData } = await supabase
-        .from('print_file_groups')
-        .select('*')
-        .eq('order_id', order.id);
-      
-      const fileGroups = fileGroupsData?.map(group => ({
-        groupKey: group.config_group,
-        config: {
-          color: group.config_color,
-          sides: group.config_sides,
-          copies: String(group.config_copies)
-        },
-        fileCount: filesData?.filter(f => f.config_group === group.config_group).length || 0,
-        mergedFilePath: group.merged_file_path
-      })) || [];
-      
-      return {
-        id: order.id,
-        studentName: order.student_name,
-        studentId: order.student_id,
-        timestamp: order.timestamp,
-        status: order.status,
-        isActive: order.is_active,
-        fileCount: filesData?.length || 0,
-        amount: order.amount,
-        additionalDetails: order.additional_details || '',
-        files: filesData?.map(file => ({
-          name: file.file_name,
-          type: file.file_type.split('/').pop(),
-          size: file.file_size,
-          path: file.storage_path, // Map storage_path to path for consistency
-          config: {
-            color: file.config_color || configData?.color || 'bw',
-            sides: file.config_sides || configData?.sides || 'single',
-            copies: file.config_copies ? String(file.config_copies) : String(configData?.copies || 1)
-          },
-          configGroup: file.config_group
-        })) || [],
-        config: {
-          color: configData?.color || 'Black & White',
-          sides: configData?.sides || 'Single-sided',
-          copies: configData?.copies ? String(configData.copies) : '1'
-        },
-        fileGroups
-      };
-    })
-  );
+  if (!orders) {
+    return [];
+  }
   
-  return ordersWithDetails;
+  // Transform the data to match the expected interface
+  const transformedOrders: PrintOrder[] = orders.map(order => {
+    const filesData = Array.isArray(order.files) ? order.files : [];
+    
+    return {
+      id: order.id,
+      studentName: order.student_name,
+      studentId: order.student_id,
+      timestamp: order.timestamp,
+      status: order.status,
+      isActive: order.is_active,
+      fileCount: filesData.length,
+      amount: order.amount,
+      additionalDetails: order.additional_details || '',
+      files: filesData.map((file: any) => ({
+        name: file.name || '',
+        type: file.type?.split('/').pop() || 'pdf',
+        size: file.size || 0,
+        path: file.storagePath,
+        config: {
+          color: file.config?.color || order.config_color || 'bw',
+          sides: file.config?.sides || order.config_sides || 'single',
+          copies: file.config?.copies || String(order.config_copies || 1)
+        }
+      })),
+      config: {
+        color: order.config_color === 'bw' ? 'Black & White' : 'Color',
+        sides: order.config_sides === 'single' ? 'Single-sided' : 'Double-sided',
+        copies: String(order.config_copies || 1)
+      },
+      fileGroups: [] // Not using file groups in simplified schema
+    };
+  });
+  
+  return transformedOrders;
 };
 
 /**
@@ -98,48 +72,11 @@ export const getPrintOrderById = async (orderId: string): Promise<PrintOrder> =>
     throw new Error('Failed to fetch print order');
   }
   
-  // Get config
-  const { data: configData } = await supabase
-    .from('print_configs')
-    .select('*')
-    .eq('order_id', order.id)
-    .single();
+  if (!order) {
+    throw new Error('Print order not found');
+  }
   
-  // Get files
-  const { data: filesData } = await supabase
-    .from('print_files')
-    .select('*')
-    .eq('order_id', order.id);
-  
-  // Get file groups (merged files)
-  const { data: fileGroupsData } = await supabase
-    .from('print_file_groups')
-    .select('*')
-    .eq('order_id', order.id);
-  
-  const fileGroups = fileGroupsData?.map(group => ({
-    groupKey: group.config_group,
-    config: {
-      color: group.config_color,
-      sides: group.config_sides,
-      copies: String(group.config_copies)
-    },
-    fileCount: filesData?.filter(f => f.config_group === group.config_group).length || 0,
-    mergedFilePath: group.merged_file_path
-  })) || [];
-  
-  const fileDetails = filesData?.map(file => ({
-    name: file.file_name,
-    type: file.file_type.split('/').pop(),
-    size: file.file_size,
-    path: file.storage_path, // Map storage_path to path for consistency
-    config: {
-      color: file.config_color || configData?.color || 'bw',
-      sides: file.config_sides || configData?.sides || 'single',
-      copies: file.config_copies ? String(file.config_copies) : String(configData?.copies || 1)
-    },
-    configGroup: file.config_group
-  })) || [];
+  const filesData = Array.isArray(order.files) ? order.files : [];
   
   return {
     id: order.id,
@@ -148,15 +85,25 @@ export const getPrintOrderById = async (orderId: string): Promise<PrintOrder> =>
     timestamp: order.timestamp,
     status: order.status,
     isActive: order.is_active,
-    fileCount: fileDetails.length,
+    fileCount: filesData.length,
     amount: order.amount,
     additionalDetails: order.additional_details || '',
-    files: fileDetails,
+    files: filesData.map((file: any) => ({
+      name: file.name || '',
+      type: file.type?.split('/').pop() || 'pdf',
+      size: file.size || 0,
+      path: file.storagePath,
+      config: {
+        color: file.config?.color || order.config_color || 'bw',
+        sides: file.config?.sides || order.config_sides || 'single',
+        copies: file.config?.copies || String(order.config_copies || 1)
+      }
+    })),
     config: {
-      color: configData?.color || 'Black & White',
-      sides: configData?.sides || 'Single-sided',
-      copies: configData?.copies ? String(configData.copies) : '1' // Convert number to string
+      color: order.config_color === 'bw' ? 'Black & White' : 'Color',
+      sides: order.config_sides === 'single' ? 'Single-sided' : 'Double-sided',
+      copies: String(order.config_copies || 1)
     },
-    fileGroups
+    fileGroups: []
   };
 };

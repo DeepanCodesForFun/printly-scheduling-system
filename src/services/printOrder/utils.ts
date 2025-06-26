@@ -35,20 +35,6 @@ export const downloadOrderFile = async (
   try {
     console.log("Starting download for file:", { filePath, fileName });
     
-    // First check if the file exists in storage
-    const { data: fileExists, error: checkError } = await supabase.storage
-      .from('print_files')
-      .list('', {
-        search: filePath
-      });
-    
-    if (checkError) {
-      console.error("Error checking file existence:", checkError);
-      throw new Error(`File check failed: ${checkError.message}`);
-    }
-    
-    console.log("File check result:", fileExists);
-    
     // Get the public URL for the file
     const { data } = supabase.storage
       .from('print_files')
@@ -85,6 +71,5 @@ export const getDownloadFileName = (order: PrintOrder, fileIndex?: number): stri
     return order.files[fileIndex].name;
   }
   
-  // For merged files, create a descriptive name
-  return `${order.studentName.replace(/\s+/g, '_')}_${order.studentId}_merged_order.pdf`;
+  return `${order.studentName.replace(/\s+/g, '_')}_${order.studentId}_order.pdf`;
 };
