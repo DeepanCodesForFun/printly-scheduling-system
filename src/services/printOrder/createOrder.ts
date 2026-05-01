@@ -11,8 +11,14 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
   const { studentName, studentId, files, config, amount, additionalDetails, fileConfigs } = params;
   
   try {
-    // Upload files to storage first
-    const uploadedFiles = await uploadPdfFiles(files, 'temp-id');
+    // Get the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error("You must be signed in to submit a print order.");
+    }
+
+    // Upload files to storage scoped to the user (required by RLS policy)
+    const uploadedFiles = await uploadPdfFiles(files, user.id);
     
     // Prepare file data for JSON storage
     const fileData = uploadedFiles.map(({ filePath, fileInfo }, index) => {
@@ -40,6 +46,7 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
     const { data: orderData, error: orderError } = await supabase
       .from('print_orders')
       .insert({
+        user_id: user.id,
         student_name: studentName,
         student_id: studentId,
         amount: amount,
