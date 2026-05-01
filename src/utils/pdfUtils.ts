@@ -110,14 +110,17 @@ export const uploadPdfFiles = async (files: File[], orderId: string): Promise<{
 };
 
 /**
- * Get a downloadable URL for a file from Supabase storage
- * @param filePath Path to the file in storage
- * @returns URL to download the file
+ * Get a temporary signed download URL for a file from Supabase storage.
+ * The print_files bucket is private — signed URLs are required.
  */
-export const getFileUrl = (filePath: string): string => {
-  const { data } = supabase.storage
+export const getFileUrl = async (filePath: string, ttlSeconds = 600): Promise<string> => {
+  const { data, error } = await supabase.storage
     .from('print_files')
-    .getPublicUrl(filePath);
-  
-  return data.publicUrl;
+    .createSignedUrl(filePath, ttlSeconds);
+
+  if (error || !data?.signedUrl) {
+    console.error("Error creating signed URL:", error);
+    throw new Error("Could not retrieve file URL");
+  }
+  return data.signedUrl;
 };

@@ -1,14 +1,16 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { Printer, Sun, Moon, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Printer, Sun, Moon, LogOut, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isStaff, signOut } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const isStaffAuthenticated = localStorage.getItem("staffAuthenticated") === "true";
   
   useEffect(() => {
     const isDark = localStorage.getItem("darkMode") === "true";
@@ -26,10 +28,10 @@ const Header = () => {
     document.documentElement.classList.toggle("dark");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("staffAuthenticated");
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Logged out successfully");
-    window.location.href = "/";
+    navigate("/");
   };
 
   return (
@@ -66,42 +68,35 @@ const Header = () => {
                 </Link>
               </motion.div>
               
-              {location.pathname === "/student" && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="hidden md:block"
-                >
-                  <Link 
-                    to="/staff-login" 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                  >
+              {user && isStaff && location.pathname !== "/staff" && (
+                <motion.div whileHover={{ scale: 1.05 }} className="hidden md:block">
+                  <Link to="/staff" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                     Staff Portal
                   </Link>
                 </motion.div>
               )}
-              
-              {(location.pathname === "/staff-login" || location.pathname === "/staff") && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="hidden md:block"
-                >
-                  <Link 
-                    to="/student" 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                  >
+              {user && location.pathname !== "/student" && (
+                <motion.div whileHover={{ scale: 1.05 }} className="hidden md:block">
+                  <Link to="/student" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                     Student Portal
                   </Link>
                 </motion.div>
               )}
-              
-              {isStaffAuthenticated && location.pathname === "/staff" && (
-                <motion.div
+              {user ? (
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   onClick={handleLogout}
                   className="hidden md:flex items-center gap-1 cursor-pointer text-sm font-medium text-foreground hover:text-primary transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
+                </motion.button>
+              ) : (
+                <motion.div whileHover={{ scale: 1.05 }} className="hidden md:block">
+                  <Link to="/auth" className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                    <LogIn className="h-4 w-4" />
+                    <span>Sign in</span>
+                  </Link>
                 </motion.div>
               )}
             </>
