@@ -2,61 +2,43 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PrintOrder } from "./types";
 
+const SIGNED_URL_TTL_SECONDS = 60 * 10; // 10 minutes
+
 /**
- * Get a file download URL from Supabase storage
+ * Get a temporary signed download URL from Supabase storage.
+ * The bucket is private, so this is the only way to access files.
  */
 export const getOrderFileUrl = async (filePath: string): Promise<string> => {
-  try {
-    console.log("Getting file URL for path:", filePath);
-    
-    const { data } = supabase.storage
-      .from('print_files')
-      .getPublicUrl(filePath);
-    
-    if (!data.publicUrl) {
-      throw new Error("Could not get public URL");
-    }
-    
-    console.log("Generated public URL:", data.publicUrl);
-    return data.publicUrl;
-  } catch (error) {
-    console.error("Error getting file URL:", error);
+  const { data, error } = await supabase.storage
+    .from('print_files')
+    .createSignedUrl(filePath, SIGNED_URL_TTL_SECONDS);
+
+  if (error || !data?.signedUrl) {
+    console.error("Error creating signed URL:", error);
     throw new Error("Could not retrieve file download URL");
   }
+
+  return data.signedUrl;
 };
 
 /**
  * Download a file from a print order
  */
 export const downloadOrderFile = async (
-  filePath: string, 
+  filePath: string,
   fileName: string = 'download.pdf'
 ): Promise<void> => {
   try {
-    console.log("Starting download for file:", { filePath, fileName });
-    
-    // Get the public URL for the file
-    const { data } = supabase.storage
-      .from('print_files')
-      .getPublicUrl(filePath);
-    
-    if (!data.publicUrl) {
-      throw new Error("Could not get file URL");
-    }
-    
-    console.log("Using download URL:", data.publicUrl);
-    
-    // Create a temporary anchor element to trigger download
+    const url = await getOrderFileUrl(filePath);
+
     const link = document.createElement('a');
-    link.href = data.publicUrl;
+    link.href = url;
     link.download = fileName;
     link.target = '_blank';
-    
-    // Append to body, click, and remove
+    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
   } catch (error) {
     console.error("Error downloading file:", error);
     throw new Error(`Could not download file: ${error instanceof Error ? error.message : 'Unknown error'}`);
