@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadPdfFiles } from "@/utils/pdfUtils";
 import { CreateOrderParams, FileConfig } from "./types";
 import { activateNextOrder } from "./queueManagement";
+import { createOrderSchema, validateFiles } from "./validation";
 
 /**
  * Create a new print order in the database
@@ -11,6 +12,22 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
   const { studentName, studentId, files, config, amount, additionalDetails, fileConfigs } = params;
   
   try {
+    // Validate inputs before doing any I/O
+    const parsed = createOrderSchema.safeParse({
+      studentName,
+      studentId,
+      additionalDetails,
+      amount,
+      config,
+    });
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0].message);
+    }
+    const fileError = validateFiles(files);
+    if (fileError) {
+      throw new Error(fileError);
+    }
+
     // Get the authenticated user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -82,6 +99,6 @@ export const createPrintOrder = async (params: CreateOrderParams): Promise<strin
     return orderData.id;
   } catch (error) {
     console.error('Error processing files:', error);
-    throw new Error('Failed to process files');
+    throw error instanceof Error ? error : new Error("Failed to process files");
   }
 };

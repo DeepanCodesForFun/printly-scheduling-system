@@ -130,9 +130,17 @@ const StaffDashboard = () => {
             
             <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
               {isLoading ? (
-                <div className="text-center py-8">
-                  <RefreshCw className="h-8 w-8 mx-auto animate-spin text-primary/60" />
-                  <p className="text-muted-foreground mt-4">Loading print requests...</p>
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="animate-pulse rounded-xl border border-border bg-secondary/40 p-4 space-y-2"
+                    >
+                      <div className="h-4 w-1/3 bg-muted rounded" />
+                      <div className="h-3 w-1/2 bg-muted rounded" />
+                      <div className="h-3 w-1/4 bg-muted rounded" />
+                    </div>
+                  ))}
                 </div>
               ) : filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => (

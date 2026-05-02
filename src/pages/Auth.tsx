@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Printer, Mail, Lock, User as UserIcon, AlertCircle } from "lucide-react";
+import { Printer, Mail, Lock, User as UserIcon, AlertCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,8 +25,16 @@ const signInSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const roleParam = (searchParams.get("role") === "staff" ? "staff" : "student") as "staff" | "student";
+  const isStaffFlow = roleParam === "staff";
   const { user, isStaff, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  // Staff path is sign-in only — force signin mode if user toggles via URL
+  useEffect(() => {
+    if (isStaffFlow && mode === "signup") setMode("signin");
+  }, [isStaffFlow, mode]);
   const [displayName, setDisplayName] = useState("");
   const [studentId, setStudentId] = useState("");
   const [email, setEmail] = useState("");
@@ -121,19 +129,31 @@ const Auth = () => {
         >
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
-              <Printer className="h-10 w-10 text-primary" />
+              {isStaffFlow ? (
+                <ShieldCheck className="h-10 w-10 text-primary" />
+              ) : (
+                <Printer className="h-10 w-10 text-primary" />
+              )}
             </div>
             <h1 className="text-3xl font-bold mb-2">
-              {mode === "signin" ? "Welcome back" : "Create your account"}
+              {isStaffFlow
+                ? "Staff sign in"
+                : mode === "signin"
+                ? "Welcome back"
+                : "Create your student account"}
             </h1>
             <p className="text-muted-foreground">
-              {mode === "signin" ? "Sign in to access AXMS" : "Sign up to submit print orders"}
+              {isStaffFlow
+                ? "Restricted area. Use your authorised staff credentials."
+                : mode === "signin"
+                ? "Sign in to submit and track print orders"
+                : "Sign up to submit print orders"}
             </p>
           </div>
 
           <div className="glass-card dark:glass-card-dark rounded-xl overflow-hidden">
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {mode === "signup" && (
+              {!isStaffFlow && mode === "signup" && (
                 <>
                   <div className="space-y-2">
                     <label htmlFor="displayName" className="text-sm font-medium">Full name</label>
@@ -151,7 +171,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="studentId" className="text-sm font-medium">Student ID (optional)</label>
+                    <label htmlFor="studentId" className="text-sm font-medium">Student ID</label>
                     <input
                       id="studentId"
                       type="text"
@@ -159,6 +179,7 @@ const Auth = () => {
                       onChange={(e) => setStudentId(e.target.value)}
                       className="w-full bg-background border border-input rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                       placeholder="e.g. 2024-CSE-101"
+                      required
                     />
                   </div>
                 </>
@@ -207,7 +228,13 @@ const Auth = () => {
                 disabled={loading}
                 className="w-full bg-primary text-primary-foreground py-2.5 rounded-md font-medium transition-all hover:bg-primary/90 disabled:opacity-60"
               >
-                {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+                {loading
+                  ? "Please wait…"
+                  : isStaffFlow
+                  ? "Sign in as staff"
+                  : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
               </button>
 
               <div className="relative my-2">
@@ -237,13 +264,22 @@ const Auth = () => {
           </div>
 
           <div className="mt-6 text-center space-y-2">
-            <button
-              type="button"
-              onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-              className="text-sm text-primary hover:underline"
-            >
-              {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+            {isStaffFlow ? (
+              <p className="text-sm text-muted-foreground">
+                Staff accounts are provisioned by the administrator.{" "}
+                <Link to="/auth?role=student" className="text-primary hover:underline">
+                  Student sign in
+                </Link>
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
+                className="text-sm text-primary hover:underline"
+              >
+                {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            )}
             <div>
               <Link to="/" className="text-sm text-muted-foreground hover:text-primary">Return to Home</Link>
             </div>
