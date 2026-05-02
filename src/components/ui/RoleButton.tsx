@@ -12,8 +12,9 @@ interface RoleButtonProps {
 }
 
 const RoleButton = ({ title, description, icon: Icon, to, delay = 0 }: RoleButtonProps) => {
-  // Adjust the path for staff portal to go to login
-  const adjustedPath = to === "/staff" ? "/staff-login" : to;
+  // Route through auth with role hint; ProtectedRoute handles already-authed users
+  const adjustedPath =
+    to === "/staff" ? "/auth?role=staff" : to === "/student" ? "/auth?role=student" : to;
   
   return (
     <motion.div
