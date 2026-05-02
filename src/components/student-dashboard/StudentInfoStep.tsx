@@ -1,6 +1,9 @@
 
 import { CreditCard } from "lucide-react";
+import { useEffect } from "react";
 import { usePrintOrder } from "@/contexts/PrintOrderContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import PaymentSection from "./PaymentSection";
 
 const StudentInfoStep = () => {
@@ -16,6 +19,25 @@ const StudentInfoStep = () => {
     files,
     config
   } = usePrintOrder();
+  const { user } = useAuth();
+
+  // Prefill name + student ID from the signed-in user's profile
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) return;
+    if (studentName && studentId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, student_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.display_name && !studentName) setStudentName(data.display_name);
+      if (data?.student_id && !studentId) setStudentId(data.student_id);
+    })();
+    return () => { cancelled = true; };
+  }, [user, studentName, studentId, setStudentName, setStudentId]);
 
   return (
     <div>
